@@ -1,86 +1,372 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans)}
-.wc-wrap{padding:1rem 0}
-.top-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.mode-toggle{display:flex;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);overflow:hidden}
-.mode-btn{padding:6px 16px;font-size:13px;background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary);transition:background .15s,color .15s}
-.mode-btn.active{background:var(--color-text-primary);color:var(--color-background-primary)}
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --gray-50:#f9fafb;
+  --gray-100:#f3f4f6;
+  --gray-200:#e5e7eb;
+  --gray-600:#4b5563;
+  --gray-700:#374151;
+  --gray-900:#111827;
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  background:linear-gradient(135deg,#f9fafb 0%,#f3f4f6 100%);
+  color:var(--gray-900);
+  line-height:1.6;
+  min-height:100vh;
+}
+
+.header{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+  color:white;
+  padding:3rem 2rem;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(99,102,241,0.1);
+}
+
+.header h1{
+  font-size:2.5rem;
+  font-weight:700;
+  margin:0;
+}
+
+.container{
+  max-width:900px;
+  margin:0 auto;
+  padding:2rem 1.5rem;
+}
+
+.wc-wrap{padding:0}
+
+.top-bar{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  margin-bottom:1.5rem;
+  flex-wrap:wrap;
+}
+
+.mode-toggle{
+  display:flex;
+  border:2px solid var(--gray-200);
+  border-radius:8px;
+  overflow:hidden;
+  background:var(--gray-100);
+}
+
+.mode-btn{
+  padding:0.5rem 1.25rem;
+  font-size:14px;
+  font-weight:500;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  color:var(--gray-600);
+  transition:all 0.2s;
+}
+
+.mode-btn:hover{
+  color:var(--primary);
+}
+
+.mode-btn.active{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:white;
+  box-shadow:0 2px 4px rgba(99,102,241,0.2);
+}
+
 .spacer{flex:1}
-.ctrl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.ctrl-row label{font-size:13px;color:var(--color-text-secondary);white-space:nowrap}
-.ctrl-row select{font-size:13px;padding:5px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+
+.ctrl-row{
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom:1.5rem;
+}
+
+.ctrl-row label{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:500;
+  white-space:nowrap;
+}
+
+.ctrl-row select{
+  font-size:14px;
+  padding:0.5rem 0.875rem;
+  border-radius:8px;
+  border:2px solid var(--gray-200);
+  background:white;
+  color:var(--gray-900);
+  cursor:pointer;
+  font-weight:500;
+  transition:all 0.2s;
+}
+
+.ctrl-row select:hover{
+  border-color:var(--primary);
+}
+
+.ctrl-row select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.1);
+}
+
 .panel{display:none}
 .panel.active{display:block}
-textarea{width:100%;height:140px;padding:10px 12px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);resize:vertical;line-height:1.5;font-family:var(--font-sans)}
-textarea:focus{outline:none;border-color:var(--color-border-primary)}
-.wordlist-hint{font-size:12px;color:var(--color-text-tertiary);margin-bottom:6px}
-.wl-table-wrap{border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:8px}
-.wl-header{display:grid;grid-template-columns:1fr 90px 36px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-secondary);padding:6px 10px;font-size:12px;color:var(--color-text-secondary)}
-.wl-rows{max-height:180px;overflow-y:auto}
-.wl-row{display:grid;grid-template-columns:1fr 90px 36px;align-items:center;border-bottom:0.5px solid var(--color-border-tertiary)}
+
+textarea{
+  width:100%;
+  min-height:160px;
+  padding:1rem;
+  font-size:14px;
+  border:2px solid var(--gray-200);
+  border-radius:10px;
+  background:white;
+  color:var(--gray-900);
+  resize:vertical;
+  line-height:1.6;
+  font-family:inherit;
+  transition:all 0.2s;
+  margin-bottom:1.5rem;
+}
+
+textarea:hover{border-color:var(--gray-300)}
+textarea:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.1);
+}
+
+.wordlist-hint{
+  font-size:13px;
+  color:var(--gray-600);
+  margin-bottom:1rem;
+  font-style:italic;
+}
+
+.wl-table-wrap{
+  border:2px solid var(--gray-200);
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:1rem;
+  box-shadow:0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wl-header{
+  display:grid;
+  grid-template-columns:1fr 100px 45px;
+  background:linear-gradient(135deg,var(--gray-100),var(--gray-50));
+  border-bottom:2px solid var(--gray-200);
+  padding:0.75rem 1rem;
+  font-size:13px;
+  font-weight:600;
+  color:var(--gray-700);
+}
+
+.wl-rows{max-height:240px;overflow-y:auto}
+
+.wl-row{
+  display:grid;
+  grid-template-columns:1fr 100px 45px;
+  align-items:center;
+  border-bottom:1px solid var(--gray-100);
+  transition:background 0.2s;
+}
+
+.wl-row:hover{background:var(--gray-50)}
 .wl-row:last-child{border-bottom:none}
-.wl-row input{border:none;background:transparent;color:var(--color-text-primary);padding:6px 10px;font-size:13px;width:100%;outline:none;font-family:var(--font-sans)}
-.wl-row input:focus{background:var(--color-background-secondary)}
-.wl-row input[type=number]{border-left:0.5px solid var(--color-border-tertiary);text-align:right}
-.del-btn{background:none;border:none;cursor:pointer;color:var(--color-text-tertiary);font-size:16px;padding:0 10px;height:100%;display:flex;align-items:center;justify-content:center;border-left:0.5px solid var(--color-border-tertiary)}
-.del-btn:hover{color:var(--color-text-danger)}
-.add-btn{font-size:12px;padding:5px 10px;background:none;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);margin-bottom:10px}
-.add-btn:hover{background:var(--color-background-secondary)}
-.gen-btn{padding:8px 22px;font-size:14px;font-weight:500;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;transition:opacity .15s}
-.gen-btn:hover{opacity:0.85}
-.canvas-wrap{margin-top:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);overflow:hidden;position:relative;background:var(--color-background-primary)}
-canvas{display:block;width:100%;height:auto}
-.status{font-size:13px;padding:6px 0;min-height:22px}
-.status.ok{color:var(--color-text-success)}
-.status.err{color:var(--color-text-danger)}
-.status.info{color:var(--color-text-secondary)}
-.palette-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px;vertical-align:middle}
+
+.wl-row input{
+  border:none;
+  background:transparent;
+  color:var(--gray-900);
+  padding:0.75rem 1rem;
+  font-size:14px;
+  width:100%;
+  outline:none;
+  font-family:inherit;
+}
+
+.wl-row input:focus{
+  background:linear-gradient(135deg,rgba(99,102,241,0.05),transparent);
+}
+
+.wl-row input[type=number]{
+  border-left:1px solid var(--gray-200);
+  text-align:right;
+}
+
+.del-btn{
+  background:none;
+  border:none;
+  cursor:pointer;
+  color:var(--gray-400);
+  font-size:18px;
+  padding:0 0.75rem;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-left:1px solid var(--gray-200);
+  transition:color 0.2s;
+}
+
+.del-btn:hover{color:#ef4444}
+
+.add-btn{
+  font-size:14px;
+  padding:0.5rem 1rem;
+  background:var(--gray-100);
+  border:2px solid var(--gray-200);
+  border-radius:8px;
+  cursor:pointer;
+  color:var(--gray-700);
+  font-weight:500;
+  margin-bottom:1.5rem;
+  transition:all 0.2s;
+}
+
+.add-btn:hover{
+  background:var(--primary);
+  border-color:var(--primary);
+  color:white;
+}
+
+.gen-btn{
+  padding:0.75rem 2rem;
+  font-size:15px;
+  font-weight:600;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all 0.3s;
+  box-shadow:0 4px 12px rgba(99,102,241,0.3);
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.gen-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px rgba(99,102,241,0.4);
+}
+
+.canvas-wrap{
+  margin-top:1.5rem;
+  border:2px solid var(--gray-200);
+  border-radius:12px;
+  overflow:hidden;
+  position:relative;
+  background:white;
+  box-shadow:0 4px 6px rgba(0,0,0,0.07);
+}
+
+canvas{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+.status{
+  font-size:14px;
+  padding:1rem;
+  min-height:28px;
+  border-radius:8px;
+  margin:1rem 0;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.status.ok{
+  color:#10b981;
+  background:rgba(16,185,129,0.1);
+  border:1px solid rgba(16,185,129,0.3);
+}
+
+.status.err{
+  color:#ef4444;
+  background:rgba(239,68,68,0.1);
+  border:1px solid rgba(239,68,68,0.3);
+}
+
+.status.info{
+  color:var(--gray-600);
+  background:var(--gray-50);
+  border:1px solid var(--gray-200);
+}
+
+.palette-dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-right:3px;
+  vertical-align:middle;
+}
 </style>
-<h2 class="sr-only">Interactive word cloud generator — paste text or enter a word list to visualize word frequencies as a cloud</h2>
-<div class="wc-wrap">
-  <div class="top-bar">
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="btnPaste" onclick="setMode('paste')">Paste text</button>
-      <button class="mode-btn" id="btnList" onclick="setMode('list')">Word list</button>
+<div class="header">
+  <h1>Word Cloud Generator</h1>
+</div>
+
+<div class="container">
+  <div class="wc-wrap">
+    <div class="top-bar">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btnPaste" onclick="setMode('paste')">Paste text</button>
+        <button class="mode-btn" id="btnList" onclick="setMode('list')">Word list</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> Generate</button>
     </div>
-    <div class="spacer"></div>
-  </div>
-  <div class="ctrl-row">
-    <label>Font</label>
-    <select id="fontSel">
-      <option value="sans-serif">Sans-serif</option>
-      <option value="serif">Serif</option>
-      <option value="monospace">Monospace</option>
-      <option value="Georgia,serif">Georgia</option>
-      <option value="'Courier New',monospace">Courier New</option>
-      <option value="Impact,sans-serif">Impact</option>
-    </select>
-    <label style="margin-left:8px">Palette</label>
-    <select id="palSel">
-      <option value="vivid">Vivid</option>
-      <option value="ocean">Ocean</option>
-      <option value="forest">Forest</option>
-      <option value="sunset">Sunset</option>
-      <option value="mono">Monochrome</option>
-      <option value="candy">Candy</option>
-    </select>
-    <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> Generate</button>
-  </div>
-  <div id="panelPaste" class="panel active">
-    <textarea id="txtInput" placeholder="Paste any text here — any language, any mix of languages…"></textarea>
-  </div>
-  <div id="panelList" class="panel">
-    <p class="wordlist-hint">Enter words and optional weights (leave weight blank to default to 1).</p>
-    <div class="wl-table-wrap">
-      <div class="wl-header"><span>Word</span><span style="text-align:right">Weight</span><span></span></div>
-      <div class="wl-rows" id="wlRows"></div>
+
+    <div class="ctrl-row">
+      <label>Font</label>
+      <select id="fontSel">
+        <option value="sans-serif">Sans-serif</option>
+        <option value="serif">Serif</option>
+        <option value="monospace">Monospace</option>
+        <option value="Georgia,serif">Georgia</option>
+        <option value="'Courier New',monospace">Courier New</option>
+        <option value="Impact,sans-serif">Impact</option>
+      </select>
+      <label style="margin-left:1rem">Palette</label>
+      <select id="palSel">
+        <option value="vivid">Vivid</option>
+        <option value="ocean">Ocean</option>
+        <option value="forest">Forest</option>
+        <option value="sunset">Sunset</option>
+        <option value="mono">Monochrome</option>
+        <option value="candy">Candy</option>
+      </select>
     </div>
-    <button class="add-btn" onclick="addRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add row</button>
-  </div>
-  <div class="status info" id="status">Ready — paste text or build a word list, then click Generate.</div>
-  <div class="canvas-wrap">
-    <canvas id="wc" width="900" height="600"></canvas>
+
+    <div id="panelPaste" class="panel active">
+      <textarea id="txtInput" placeholder="Paste any text here: any language, any mix of languages…"></textarea>
+    </div>
+    <div id="panelList" class="panel">
+      <p class="wordlist-hint">Enter words and optional weights (leave weight blank to default to 1).</p>
+      <div class="wl-table-wrap">
+        <div class="wl-header"><span>Word</span><span style="text-align:right">Weight</span><span></span></div>
+        <div class="wl-rows" id="wlRows"></div>
+      </div>
+      <button class="add-btn" onclick="addRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add row</button>
+    </div>
+
+    <div class="status info" id="status">Status: Ready! Paste text or build a word list, then click Generate.</div>
+    <div class="canvas-wrap">
+      <canvas id="wc" width="900" height="600"></canvas>
+    </div>
   </div>
 </div>
 <script>
@@ -176,16 +462,16 @@ function generate(){
   let words=[];
   if(mode==='paste'){
     const txt=document.getElementById('txtInput').value.trim();
-    if(!txt){setStatus('No text to process — paste something first.','err');return;}
-    setStatus('Processing text…','info');
+    if(!txt){setStatus('Status: No text to process! Paste something first.','err');return;}
+    setStatus('Status: Processing text…','info');
     words=processText(txt);
-    if(!words.length){setStatus('No usable words found — try more content.','err');return;}
-  } else {
+      if(!words.length){setStatus('Status: No usable words found! Try more content.','err');return;}
+    } else {
     words=processWordList();
-    if(!words.length){setStatus('Word list is empty — add some words first.','err');return;}
+    if(!words.length){setStatus('Status: Word list is empty! Add some words first.','err');return;}
   }
 
-  setStatus('Placing words…','info');
+  setStatus('Status: Placing words…','info');
 
   const W=900,H=600;
   const maxCount=words[0].count;
@@ -255,11 +541,11 @@ function generate(){
 
   const total=words.length;
   if(drawn===total){
-    setStatus(`Done — ${drawn} word${drawn!==1?'s':''} placed.`,'ok');
+    setStatus(`Status: Done! ${drawn} Word${drawn!==1?'s':''} placed.`,'ok');
   } else if(drawn===0){
-    setStatus('Could not fit any words — try fewer words or a smaller font.','err');
+    setStatus('Status: Could not fit any words! Try fewer words or a smaller font.','err');
   } else {
-    setStatus(`Placed ${drawn} of ${total} words — ${total-drawn} didn't fit.`,'ok');
+    setStatus(`Status: Placed ${drawn} of ${total} words. ${total-drawn} didn't fit.`,'ok');
   }
 }
 </script>
