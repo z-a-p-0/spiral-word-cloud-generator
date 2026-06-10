@@ -328,6 +328,7 @@ canvas{
       </div>
       <div class="spacer"></div>
       <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> Generate</button>
+      <button class="gen-btn" id="dlBtn" onclick="download()" style="background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 12px rgba(16,185,129,0.3)" title="Download as PNG"><i class="ti ti-download" aria-hidden="true"></i> Download</button>
     </div>
 
     <div class="ctrl-row">
@@ -547,5 +548,13 @@ function generate(){
   } else {
     setStatus(`Status: Placed ${drawn} of ${total} words. ${total-drawn} didn't fit.`,'ok');
   }
+}
+
+function download(){
+  const canvas=document.getElementById('wc');
+  const link=document.createElement('a');
+  link.href=canvas.toDataURL('image/png');
+  link.download='word-cloud.png';
+  link.click();
 }
 </script>
