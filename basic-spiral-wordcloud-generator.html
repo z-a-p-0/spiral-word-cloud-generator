@@ -1,0 +1,265 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wc-wrap{padding:1rem 0}
+.top-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.mode-toggle{display:flex;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);overflow:hidden}
+.mode-btn{padding:6px 16px;font-size:13px;background:transparent;border:none;cursor:pointer;color:var(--color-text-secondary);transition:background .15s,color .15s}
+.mode-btn.active{background:var(--color-text-primary);color:var(--color-background-primary)}
+.spacer{flex:1}
+.ctrl-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.ctrl-row label{font-size:13px;color:var(--color-text-secondary);white-space:nowrap}
+.ctrl-row select{font-size:13px;padding:5px 8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+.panel{display:none}
+.panel.active{display:block}
+textarea{width:100%;height:140px;padding:10px 12px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary);resize:vertical;line-height:1.5;font-family:var(--font-sans)}
+textarea:focus{outline:none;border-color:var(--color-border-primary)}
+.wordlist-hint{font-size:12px;color:var(--color-text-tertiary);margin-bottom:6px}
+.wl-table-wrap{border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:8px}
+.wl-header{display:grid;grid-template-columns:1fr 90px 36px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-secondary);padding:6px 10px;font-size:12px;color:var(--color-text-secondary)}
+.wl-rows{max-height:180px;overflow-y:auto}
+.wl-row{display:grid;grid-template-columns:1fr 90px 36px;align-items:center;border-bottom:0.5px solid var(--color-border-tertiary)}
+.wl-row:last-child{border-bottom:none}
+.wl-row input{border:none;background:transparent;color:var(--color-text-primary);padding:6px 10px;font-size:13px;width:100%;outline:none;font-family:var(--font-sans)}
+.wl-row input:focus{background:var(--color-background-secondary)}
+.wl-row input[type=number]{border-left:0.5px solid var(--color-border-tertiary);text-align:right}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--color-text-tertiary);font-size:16px;padding:0 10px;height:100%;display:flex;align-items:center;justify-content:center;border-left:0.5px solid var(--color-border-tertiary)}
+.del-btn:hover{color:var(--color-text-danger)}
+.add-btn{font-size:12px;padding:5px 10px;background:none;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);margin-bottom:10px}
+.add-btn:hover{background:var(--color-background-secondary)}
+.gen-btn{padding:8px 22px;font-size:14px;font-weight:500;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;transition:opacity .15s}
+.gen-btn:hover{opacity:0.85}
+.canvas-wrap{margin-top:12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);overflow:hidden;position:relative;background:var(--color-background-primary)}
+canvas{display:block;width:100%;height:auto}
+.status{font-size:13px;padding:6px 0;min-height:22px}
+.status.ok{color:var(--color-text-success)}
+.status.err{color:var(--color-text-danger)}
+.status.info{color:var(--color-text-secondary)}
+.palette-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px;vertical-align:middle}
+</style>
+<h2 class="sr-only">Interactive word cloud generator — paste text or enter a word list to visualize word frequencies as a cloud</h2>
+<div class="wc-wrap">
+  <div class="top-bar">
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btnPaste" onclick="setMode('paste')">Paste text</button>
+      <button class="mode-btn" id="btnList" onclick="setMode('list')">Word list</button>
+    </div>
+    <div class="spacer"></div>
+  </div>
+  <div class="ctrl-row">
+    <label>Font</label>
+    <select id="fontSel">
+      <option value="sans-serif">Sans-serif</option>
+      <option value="serif">Serif</option>
+      <option value="monospace">Monospace</option>
+      <option value="Georgia,serif">Georgia</option>
+      <option value="'Courier New',monospace">Courier New</option>
+      <option value="Impact,sans-serif">Impact</option>
+    </select>
+    <label style="margin-left:8px">Palette</label>
+    <select id="palSel">
+      <option value="vivid">Vivid</option>
+      <option value="ocean">Ocean</option>
+      <option value="forest">Forest</option>
+      <option value="sunset">Sunset</option>
+      <option value="mono">Monochrome</option>
+      <option value="candy">Candy</option>
+    </select>
+    <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> Generate</button>
+  </div>
+  <div id="panelPaste" class="panel active">
+    <textarea id="txtInput" placeholder="Paste any text here — any language, any mix of languages…"></textarea>
+  </div>
+  <div id="panelList" class="panel">
+    <p class="wordlist-hint">Enter words and optional weights (leave weight blank to default to 1).</p>
+    <div class="wl-table-wrap">
+      <div class="wl-header"><span>Word</span><span style="text-align:right">Weight</span><span></span></div>
+      <div class="wl-rows" id="wlRows"></div>
+    </div>
+    <button class="add-btn" onclick="addRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add row</button>
+  </div>
+  <div class="status info" id="status">Ready — paste text or build a word list, then click Generate.</div>
+  <div class="canvas-wrap">
+    <canvas id="wc" width="900" height="600"></canvas>
+  </div>
+</div>
+<script>
+const PALETTES={
+  vivid:['#E24B4A','#378ADD','#1D9E75','#BA7517','#7F77DD','#D85A30','#3B6D11','#993556'],
+  ocean:['#042C53','#185FA5','#378ADD','#85B7EB','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB'],
+  forest:['#173404','#3B6D11','#639922','#97C459','#04342C','#0F6E56','#1D9E75','#5DCAA5'],
+  sunset:['#4A1B0C','#993C1D','#D85A30','#F0997B','#412402','#854F0B','#EF9F27','#FAC775'],
+  mono:['#2C2C2A','#444441','#5F5E5A','#888780','#B4B2A9','#D3D1C7'],
+  candy:['#7F77DD','#D4537E','#378ADD','#D85A30','#1D9E75','#BA7517','#534AB7','#993556']
+};
+
+const STOPWORDS=new Set(['the','and','for','that','this','with','are','was','have','from','they','will','been','were','has','had','but','not','you','all','can','her','his','him','she','our','out','use','who','its','how','now','one','also','more','their','there','than','into','about','which','when','what','would','could','should','your','then','them','some','after','over','just','like','such','very','even','most','make','time','year','each','only','way','many','while','where','these','those','both','also','other','first','last','long','same','back','take','know','new','good','old','own','well','much','any','few','two','three','four','five','six','seven','eight','nine','ten','being','made','said','did','does','doing','having','get','got','getting','let','say','see','go','going','come','came','coming','give','given','take','took','taking','put','puts','putting','work','working','works','worked','used','using','seem','seems','seemed','still','ever','never','always','already','here','too','so','no','yes','up','down','in','on','at','to','of','a','an','is','it','be','as','by','if','or','we','us','me','my','am']);
+
+let mode='paste';
+let wlData=[{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''}];
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btnPaste').classList.toggle('active',m==='paste');
+  document.getElementById('btnList').classList.toggle('active',m==='list');
+  document.getElementById('panelPaste').classList.toggle('active',m==='paste');
+  document.getElementById('panelList').classList.toggle('active',m==='list');
+}
+
+function renderRows(){
+  const c=document.getElementById('wlRows');
+  c.innerHTML='';
+  wlData.forEach((r,i)=>{
+    const div=document.createElement('div');
+    div.className='wl-row';
+    div.innerHTML=`<input type="text" placeholder="word" value="${escH(r.w)}" oninput="wlData[${i}].w=this.value">
+      <input type="number" placeholder="1" value="${escH(r.v)}" min="0.01" step="any" oninput="wlData[${i}].v=this.value">
+      <button class="del-btn" onclick="delRow(${i})" aria-label="Delete row"><i class="ti ti-x" aria-hidden="true"></i></button>`;
+    c.appendChild(div);
+  });
+}
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function addRow(){wlData.push({w:'',v:''});renderRows()}
+function delRow(i){wlData.splice(i,1);if(!wlData.length)wlData.push({w:'',v:''});renderRows()}
+
+renderRows();
+
+function setStatus(msg,type='info'){
+  const el=document.getElementById('status');
+  el.textContent=msg;
+  el.className='status '+type;
+}
+
+function processText(txt){
+  const norm=txt.normalize('NFC');
+  const tokens=norm.split(/[\s\u200B\u3000\u2000-\u206F\p{Z}\p{P}\p{S}]+/u)
+    .map(t=>t.replace(/^\p{P}+|\p{P}+$/gu,''))
+    .filter(t=>{
+      if(!t||t.length<2)return false;
+      const hasLetter=/\p{L}/u.test(t);
+      if(!hasLetter)return false;
+      const lower=t.toLowerCase();
+      if(STOPWORDS.has(lower))return false;
+      if(/^\d+$/.test(t))return false;
+      return true;
+    });
+  const freq={};
+  tokens.forEach(t=>{
+    const k=t.toLowerCase();
+    freq[k]=(freq[k]||0)+1;
+  });
+  return Object.entries(freq)
+    .map(([word,count])=>({word,count}))
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,120);
+}
+
+function processWordList(){
+  const entries=wlData.filter(r=>r.w.trim());
+  if(!entries.length)return[];
+  const maxV=Math.max(...entries.map(r=>parseFloat(r.v)||1));
+  return entries.map(r=>({
+    word:r.w.trim(),
+    count:((parseFloat(r.v)||1)/maxV)*100
+  })).sort((a,b)=>b.count-a.count);
+}
+
+function generate(){
+  const canvas=document.getElementById('wc');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,900,600);
+
+  const palKey=document.getElementById('palSel').value;
+  const font=document.getElementById('fontSel').value;
+  const colors=PALETTES[palKey];
+
+  let words=[];
+  if(mode==='paste'){
+    const txt=document.getElementById('txtInput').value.trim();
+    if(!txt){setStatus('No text to process — paste something first.','err');return;}
+    setStatus('Processing text…','info');
+    words=processText(txt);
+    if(!words.length){setStatus('No usable words found — try more content.','err');return;}
+  } else {
+    words=processWordList();
+    if(!words.length){setStatus('Word list is empty — add some words first.','err');return;}
+  }
+
+  setStatus('Placing words…','info');
+
+  const W=900,H=600;
+  const maxCount=words[0].count;
+  const minSize=16,maxSize=60;
+
+  const placed=[];
+
+  function getSize(c){
+    const ratio=Math.sqrt(c/maxCount);
+    return Math.round(minSize+(maxSize-minSize)*ratio);
+  }
+
+  function overlap(a,b){
+    return!(a.x+a.w/2<b.x-b.w/2||a.x-a.w/2>b.x+b.w/2||a.y+a.h/2<b.y-b.h/2||a.y-a.h/2>b.y+b.h/2);
+  }
+
+  function tryPlace(word,size,vertical){
+    ctx.font=`${size}px ${font}`;
+    const m=ctx.measureText(word);
+    const tw=Math.ceil(m.width)+4;
+    const th=size+4;
+    const bw=vertical?th:tw;
+    const bh=vertical?tw:th;
+    const margin=4;
+    const maxR=Math.max(W,H)*0.6;
+    for(let r=0;r<maxR;r+=2.5){
+      for(let ang=0;ang<Math.PI*2*(1+r/20);ang+=0.15){
+        const cx=W/2+r*Math.cos(ang)*1.3;
+        const cy=H/2+r*Math.sin(ang)*0.8;
+        if(cx-bw/2<margin||cx+bw/2>W-margin||cy-bh/2<margin||cy+bh/2>H-margin)continue;
+        const box={x:cx,y:cy,w:bw+4,h:bh+4};
+        if(placed.every(p=>!overlap(box,p))){
+          return{cx,cy,box,vertical,tw,th,size};
+        }
+      }
+    }
+    return null;
+  }
+
+  let drawn=0;
+  words.forEach((entry,i)=>{
+    const size=getSize(entry.count);
+    const color=colors[i%colors.length];
+    const vertical=i>0&&i%3===0;
+    let res=tryPlace(entry.word,size,vertical)||tryPlace(entry.word,size,!vertical);
+    if(!res&&size>minSize){
+      const s2=Math.max(minSize,size-8);
+      res=tryPlace(entry.word,s2,false);
+    }
+    if(!res)return;
+    placed.push(res.box);
+    ctx.save();
+    ctx.fillStyle=color;
+    ctx.font=`${res.size}px ${font}`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    if(res.vertical){
+      ctx.translate(res.cx,res.cy);
+      ctx.rotate(-Math.PI/2);
+      ctx.fillText(entry.word,0,0);
+    } else {
+      ctx.fillText(entry.word,res.cx,res.cy);
+    }
+    ctx.restore();
+    drawn++;
+  });
+
+  const total=words.length;
+  if(drawn===total){
+    setStatus(`Done — ${drawn} word${drawn!==1?'s':''} placed.`,'ok');
+  } else if(drawn===0){
+    setStatus('Could not fit any words — try fewer words or a smaller font.','err');
+  } else {
+    setStatus(`Placed ${drawn} of ${total} words — ${total-drawn} didn't fit.`,'ok');
+  }
+}
+</script>
