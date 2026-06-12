@@ -1,0 +1,745 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6366f1;
+  --primary-dark:#4f46e5;
+  --gray-50:#f9fafb;
+  --gray-100:#f3f4f6;
+  --gray-200:#e5e7eb;
+  --gray-600:#4b5563;
+  --gray-700:#374151;
+  --gray-900:#111827;
+}
+
+html{scroll-behavior:smooth}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  background:linear-gradient(135deg,#f9fafb 0%,#f3f4f6 100%);
+  color:var(--gray-900);
+  line-height:1.6;
+  min-height:100vh;
+}
+
+.header{
+  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+  color:white;
+  padding:3rem 2rem;
+  text-align:center;
+  box-shadow:0 10px 30px rgba(99,102,241,0.1);
+}
+
+.header h1{
+  font-size:2.5rem;
+  font-weight:700;
+  margin:0;
+}
+
+.container{
+  max-width:900px;
+  margin:0 auto;
+  padding:2rem 1.5rem;
+}
+
+.wc-wrap{padding:0}
+
+.top-bar{
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  margin-bottom:1.5rem;
+  flex-wrap:wrap;
+}
+
+.mode-toggle{
+  display:flex;
+  border:2px solid var(--gray-200);
+  border-radius:8px;
+  overflow:hidden;
+  background:var(--gray-100);
+}
+
+.mode-btn{
+  padding:0.5rem 1.25rem;
+  font-size:14px;
+  font-weight:500;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  color:var(--gray-600);
+  transition:all 0.2s;
+}
+
+.mode-btn:hover{
+  color:var(--primary);
+}
+
+.mode-btn.active{
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:white;
+  box-shadow:0 2px 4px rgba(99,102,241,0.2);
+}
+
+.spacer{flex:1}
+
+.ctrl-row{
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-bottom:1.5rem;
+}
+
+.ctrl-row label{
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:500;
+  white-space:nowrap;
+}
+
+.ctrl-row select{
+  font-size:14px;
+  padding:0.5rem 0.875rem;
+  border-radius:8px;
+  border:2px solid var(--gray-200);
+  background:white;
+  color:var(--gray-900);
+  cursor:pointer;
+  font-weight:500;
+  transition:all 0.2s;
+}
+
+.ctrl-row select:hover{
+  border-color:var(--primary);
+}
+
+.ctrl-row select:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.1);
+}
+
+.ctrl-row input[type=color]{
+  width:42px;
+  height:38px;
+  padding:0;
+  border:2px solid var(--gray-200);
+  border-radius:8px;
+  background:white;
+  cursor:pointer;
+}
+
+.ctrl-row input[type=color]:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.1);
+}
+
+.toggle-group{
+  display:flex;
+  align-items:center;
+  gap:0.45rem;
+  font-size:14px;
+  color:var(--gray-700);
+  font-weight:500;
+  user-select:none;
+}
+
+.toggle-group input{
+  width:16px;
+  height:16px;
+  accent-color:var(--primary);
+}
+
+.custom-palette{
+  display:none;
+  gap:0.75rem;
+  align-items:flex-start;
+  flex-wrap:wrap;
+  margin:0.25rem 0 1.5rem;
+}
+
+.custom-palette.active{
+  display:flex;
+}
+
+.custom-palette-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.5rem;
+}
+
+.custom-color-chip{
+  display:flex;
+  align-items:center;
+  gap:0.35rem;
+  padding:0.35rem;
+  border:1px solid var(--gray-200);
+  border-radius:10px;
+  background:white;
+}
+
+.custom-color-chip input[type=color]{
+  width:34px;
+  height:34px;
+  border:none;
+  padding:0;
+  box-shadow:none;
+}
+
+.custom-color-chip button{
+  width:28px;
+  height:28px;
+  border:none;
+  border-radius:8px;
+  background:var(--gray-100);
+  color:var(--gray-700);
+  cursor:pointer;
+}
+
+.custom-color-chip button:hover{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+
+.custom-add-btn{
+  padding:0.5rem 0.9rem;
+  border:2px solid var(--gray-200);
+  border-radius:8px;
+  background:var(--gray-100);
+  color:var(--gray-700);
+  cursor:pointer;
+  font-weight:500;
+}
+
+.custom-add-btn:hover{
+  background:var(--primary);
+  border-color:var(--primary);
+  color:white;
+}
+
+.panel{display:none}
+.panel.active{display:block}
+
+textarea{
+  width:100%;
+  min-height:160px;
+  padding:1rem;
+  font-size:14px;
+  border:2px solid var(--gray-200);
+  border-radius:10px;
+  background:white;
+  color:var(--gray-900);
+  resize:vertical;
+  line-height:1.6;
+  font-family:inherit;
+  transition:all 0.2s;
+  margin-bottom:1.5rem;
+}
+
+textarea:hover{border-color:var(--gray-300)}
+textarea:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(99,102,241,0.1);
+}
+
+.wordlist-hint{
+  font-size:13px;
+  color:var(--gray-600);
+  margin-bottom:1rem;
+  font-style:italic;
+}
+
+.wl-table-wrap{
+  border:2px solid var(--gray-200);
+  border-radius:10px;
+  overflow:hidden;
+  margin-bottom:1rem;
+  box-shadow:0 2px 4px rgba(0,0,0,0.05);
+}
+
+.wl-header{
+  display:grid;
+  grid-template-columns:1fr 100px 45px;
+  background:linear-gradient(135deg,var(--gray-100),var(--gray-50));
+  border-bottom:2px solid var(--gray-200);
+  padding:0.75rem 1rem;
+  font-size:13px;
+  font-weight:600;
+  color:var(--gray-700);
+}
+
+.wl-rows{max-height:240px;overflow-y:auto}
+
+.wl-row{
+  display:grid;
+  grid-template-columns:1fr 100px 45px;
+  align-items:center;
+  border-bottom:1px solid var(--gray-100);
+  transition:background 0.2s;
+}
+
+.wl-row:hover{background:var(--gray-50)}
+.wl-row:last-child{border-bottom:none}
+
+.wl-row input{
+  border:none;
+  background:transparent;
+  color:var(--gray-900);
+  padding:0.75rem 1rem;
+  font-size:14px;
+  width:100%;
+  outline:none;
+  font-family:inherit;
+}
+
+.wl-row input:focus{
+  background:linear-gradient(135deg,rgba(99,102,241,0.05),transparent);
+}
+
+.wl-row input[type=number]{
+  border-left:1px solid var(--gray-200);
+  text-align:right;
+}
+
+.del-btn{
+  background:none;
+  border:none;
+  cursor:pointer;
+  color:var(--gray-400);
+  font-size:18px;
+  padding:0 0.75rem;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-left:1px solid var(--gray-200);
+  transition:color 0.2s;
+}
+
+.del-btn:hover{color:#ef4444}
+
+.add-btn{
+  font-size:14px;
+  padding:0.5rem 1rem;
+  background:var(--gray-100);
+  border:2px solid var(--gray-200);
+  border-radius:8px;
+  cursor:pointer;
+  color:var(--gray-700);
+  font-weight:500;
+  margin-bottom:1.5rem;
+  transition:all 0.2s;
+}
+
+.add-btn:hover{
+  background:var(--primary);
+  border-color:var(--primary);
+  color:white;
+}
+
+.gen-btn{
+  padding:0.75rem 2rem;
+  font-size:15px;
+  font-weight:600;
+  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  transition:all 0.3s;
+  box-shadow:0 4px 12px rgba(99,102,241,0.3);
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.gen-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 16px rgba(99,102,241,0.4);
+}
+
+.canvas-wrap{
+  margin-top:1.5rem;
+  border:2px solid var(--gray-200);
+  border-radius:12px;
+  overflow:hidden;
+  position:relative;
+  background:white;
+  box-shadow:0 4px 6px rgba(0,0,0,0.07);
+}
+
+canvas{
+  display:block;
+  width:100%;
+  height:auto;
+}
+
+.status{
+  font-size:14px;
+  padding:1rem;
+  min-height:28px;
+  border-radius:8px;
+  margin:1rem 0;
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.status.ok{
+  color:#10b981;
+  background:rgba(16,185,129,0.1);
+  border:1px solid rgba(16,185,129,0.3);
+}
+
+.status.err{
+  color:#ef4444;
+  background:rgba(239,68,68,0.1);
+  border:1px solid rgba(239,68,68,0.3);
+}
+
+.status.info{
+  color:var(--gray-600);
+  background:var(--gray-50);
+  border:1px solid var(--gray-200);
+}
+
+.palette-dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  margin-right:3px;
+  vertical-align:middle;
+}
+
+.sr-only{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+</style>
+<h2 class="sr-only">Interactive word cloud generator - paste text or enter a word list to visualize word frequencies as a cloud</h2>
+<div class="header">
+  <h1>Word Cloud Generator</h1>
+</div>
+
+<div class="container">
+  <div class="wc-wrap">
+    <div class="top-bar">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btnList" onclick="setMode('list')">Word list</button>
+        <button class="mode-btn" id="btnPaste" onclick="setMode('paste')">Paste text</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> Generate</button>
+      <button class="gen-btn" id="dlBtn" onclick="download()" style="background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 12px rgba(16,185,129,0.3)" title="Download as PNG"><i class="ti ti-download" aria-hidden="true"></i> Download</button>
+    </div>
+
+    <div class="ctrl-row">
+      <label>Font</label>
+      <select id="fontSel">
+        <option value="sans-serif">Sans-serif</option>
+        <option value="serif">Serif</option>
+        <option value="monospace">Monospace</option>
+        <option value="Georgia,serif">Georgia</option>
+        <option value="'Courier New',monospace">Courier New</option>
+        <option value="Impact,sans-serif">Impact</option>
+      </select>
+      <label style="margin-left:1rem">Palette</label>
+      <select id="palSel" onchange="handlePaletteChange()">
+        <option value="vivid">Vivid</option>
+        <option value="ocean">Ocean</option>
+        <option value="forest">Forest</option>
+        <option value="sunset">Sunset</option>
+        <option value="mono">Monochrome</option>
+        <option value="candy">Candy</option>
+        <option value="custom">Custom</option>
+      </select>
+      <label style="margin-left:1rem">Background</label>
+      <input id="bgSel" type="color" value="#ffffff" aria-label="Background color">
+      <label class="toggle-group" style="margin-left:0.75rem">
+        <input id="randPos" type="checkbox">
+        Randomise positions
+      </label>
+    </div>
+
+    <div id="customPalette" class="custom-palette" aria-label="Custom color palette editor">
+      <div class="custom-palette-list" id="customPaletteList"></div>
+      <button class="custom-add-btn" type="button" onclick="addCustomColor()">Add colour</button>
+    </div>
+
+    <div id="panelList" class="panel active">
+      <p class="wordlist-hint">Enter words and optional weights (leave weight blank to default to 1).</p>
+      <div class="wl-table-wrap">
+        <div class="wl-header"><span>Word</span><span style="text-align:right">Weight</span><span></span></div>
+        <div class="wl-rows" id="wlRows"></div>
+      </div>
+      <button class="add-btn" onclick="addRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add row</button>
+    </div>
+
+    <div id="panelPaste" class="panel">
+      <textarea id="txtInput" placeholder="Paste any text here: any language, any mix of languages..."></textarea>
+    </div>
+
+    <div class="status info" id="status">Ready - build a word list or paste text, then click Generate.</div>
+    <div class="canvas-wrap">
+      <canvas id="wc" width="900" height="600"></canvas>
+    </div>
+  </div>
+</div>
+<script>
+const PALETTES={
+  vivid:['#E24B4A','#378ADD','#1D9E75','#BA7517','#7F77DD','#D85A30','#3B6D11','#993556'],
+  ocean:['#042C53','#185FA5','#378ADD','#85B7EB','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB'],
+  forest:['#173404','#3B6D11','#639922','#97C459','#04342C','#0F6E56','#1D9E75','#5DCAA5'],
+  sunset:['#4A1B0C','#993C1D','#D85A30','#F0997B','#412402','#854F0B','#EF9F27','#FAC775'],
+  mono:['#2C2C2A','#444441','#5F5E5A','#888780','#B4B2A9','#D3D1C7'],
+  candy:['#7F77DD','#D4537E','#378ADD','#D85A30','#1D9E75','#BA7517','#534AB7','#993556']
+};
+
+const STOPWORDS=new Set(['the','and','for','that','this','with','are','was','have','from','they','will','been','were','has','had','but','not','you','all','can','her','his','him','she','our','out','use','who','its','how','now','one','also','more','their','there','than','into','about','which','when','what','would','could','should','your','then','them','some','after','over','just','like','such','very','even','most','make','time','year','each','only','way','many','while','where','these','those','both','also','other','first','last','long','same','back','take','know','new','good','old','own','well','much','any','few','two','three','four','five','six','seven','eight','nine','ten','being','made','said','did','does','doing','having','get','got','getting','let','say','see','go','going','come','came','coming','give','given','take','took','taking','put','puts','putting','work','working','works','worked','used','using','seem','seems','seemed','still','ever','never','always','already','here','too','so','no','yes','up','down','in','on','at','to','of','a','an','is','it','be','as','by','if','or','we','us','me','my','am']);
+
+let mode='list';
+let wlData=[{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''}];
+let customPalette=['#E24B4A','#378ADD','#1D9E75','#BA7517'];
+
+function shuffleArray(items){
+  const array=items.slice();
+  for(let i=array.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [array[i],array[j]]=[array[j],array[i]];
+  }
+  return array;
+}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('panelList').classList.toggle('active',m==='list');
+  document.getElementById('panelPaste').classList.toggle('active',m==='paste');
+  document.getElementById('btnList').classList.toggle('active',m==='list');
+  document.getElementById('btnPaste').classList.toggle('active',m==='paste');
+}
+
+function handlePaletteChange(){
+  const isCustom=document.getElementById('palSel').value==='custom';
+  document.getElementById('customPalette').classList.toggle('active',isCustom);
+}
+
+function renderCustomPalette(){
+  const list=document.getElementById('customPaletteList');
+  list.innerHTML='';
+  customPalette.forEach((color,index)=>{
+    const chip=document.createElement('div');
+    chip.className='custom-color-chip';
+    chip.innerHTML=`<input type="color" value="${escH(color)}" aria-label="Custom colour ${index+1}" onchange="updateCustomColor(${index}, this.value)"><button type="button" onclick="removeCustomColor(${index})" aria-label="Remove colour">&times;</button>`;
+    list.appendChild(chip);
+  });
+}
+
+function addCustomColor(){
+  customPalette.push('#7F77DD');
+  renderCustomPalette();
+}
+
+function removeCustomColor(index){
+  if(customPalette.length<=1)return;
+  customPalette.splice(index,1);
+  renderCustomPalette();
+}
+
+function updateCustomColor(index,value){
+  customPalette[index]=value;
+}
+
+function renderRows(){
+  const c=document.getElementById('wlRows');
+  c.innerHTML='';
+  wlData.forEach((r,i)=>{
+    const div=document.createElement('div');
+    div.className='wl-row';
+    div.innerHTML=`<input type="text" placeholder="word" value="${escH(r.w)}" oninput="wlData[${i}].w=this.value">
+      <input type="number" placeholder="1" value="${escH(r.v)}" min="0.01" step="any" oninput="wlData[${i}].v=this.value">
+      <button class="del-btn" onclick="delRow(${i})" aria-label="Delete row"><i class="ti ti-x" aria-hidden="true"></i></button>`;
+    c.appendChild(div);
+  });
+}
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function addRow(){wlData.push({w:'',v:''});renderRows()}
+function delRow(i){wlData.splice(i,1);if(!wlData.length)wlData.push({w:'',v:''});renderRows()}
+
+renderRows();
+renderCustomPalette();
+handlePaletteChange();
+
+function setStatus(msg,type='info'){
+  const el=document.getElementById('status');
+  el.textContent=msg;
+  el.className='status '+type;
+}
+
+function processText(txt){
+  const norm=txt.normalize('NFC');
+  const tokens=norm.split(/[\s\u200B\u3000\u2000-\u206F\p{Z}\p{P}\p{S}]+/u)
+    .map(t=>t.replace(/^\p{P}+|\p{P}+$/gu,''))
+    .filter(t=>{
+      if(!t||t.length<2)return false;
+      const hasLetter=/\p{L}/u.test(t);
+      if(!hasLetter)return false;
+      const lower=t.toLowerCase();
+      if(STOPWORDS.has(lower))return false;
+      if(/^\d+$/.test(t))return false;
+      return true;
+    });
+  const freq={};
+  tokens.forEach(t=>{
+    const k=t.toLowerCase();
+    freq[k]=(freq[k]||0)+1;
+  });
+  return Object.entries(freq)
+    .map(([word,count])=>({word,count}))
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,120);
+}
+
+function processWordList(){
+  const entries=wlData.filter(r=>r.w.trim());
+  if(!entries.length)return[];
+  const maxV=Math.max(...entries.map(r=>parseFloat(r.v)||1));
+  return entries.map(r=>({
+    word:r.w.trim(),
+    count:((parseFloat(r.v)||1)/maxV)*100
+  })).sort((a,b)=>b.count-a.count);
+}
+
+function generate(){
+  const canvas=document.getElementById('wc');
+  const ctx=canvas.getContext('2d');
+  const bgColor=document.getElementById('bgSel').value;
+  const randomizePositions=document.getElementById('randPos').checked;
+  ctx.fillStyle=bgColor;
+  ctx.fillRect(0,0,900,600);
+
+  const palKey=document.getElementById('palSel').value;
+  const font=document.getElementById('fontSel').value;
+  const colors=palKey==='custom'?(customPalette.length?customPalette:PALETTES.vivid):PALETTES[palKey];
+
+  let words=[];
+  if(mode==='paste'){
+    const txt=document.getElementById('txtInput').value.trim();
+    if(!txt){setStatus('No text to process - paste something first.','err');return;}
+    setStatus('Processing text…','info');
+    words=processText(txt);
+    if(!words.length){setStatus('No usable words found - try more content.','err');return;}
+  } else {
+    words=processWordList();
+    if(!words.length){setStatus('Word list is empty - add some words first.','err');return;}
+  }
+
+  if(randomizePositions){
+    words=shuffleArray(words);
+  }
+
+  setStatus('Placing words…','info');
+
+  const W=900,H=600;
+  const maxCount=words[0].count;
+  const minSize=16,maxSize=60;
+
+  const placed=[];
+
+  function getSize(c){
+    const ratio=Math.sqrt(c/maxCount);
+    return Math.round(minSize+(maxSize-minSize)*ratio);
+  }
+
+  function overlap(a,b){
+    return!(a.x+a.w/2<b.x-b.w/2||a.x-a.w/2>b.x+b.w/2||a.y+a.h/2<b.y-b.h/2||a.y-a.h/2>b.y+b.h/2);
+  }
+
+  function tryPlace(word,size,vertical){
+    ctx.font=`${size}px ${font}`;
+    const m=ctx.measureText(word);
+    const tw=Math.ceil(m.width)+4;
+    const th=size+4;
+    const bw=vertical?th:tw;
+    const bh=vertical?tw:th;
+    const margin=4;
+    const maxR=Math.max(W,H)*0.6;
+    const angleOffset=randomizePositions?Math.random()*Math.PI*2:0;
+    const radiusOffset=randomizePositions?Math.random()*8:0;
+    for(let r=0;r<maxR;r+=2.5){
+      for(let ang=angleOffset;ang<angleOffset+Math.PI*2*(1+r/20);ang+=0.15){
+        const radius=r+radiusOffset;
+        const cx=W/2+radius*Math.cos(ang)*1.3;
+        const cy=H/2+radius*Math.sin(ang)*0.8;
+        if(cx-bw/2<margin||cx+bw/2>W-margin||cy-bh/2<margin||cy+bh/2>H-margin)continue;
+        const box={x:cx,y:cy,w:bw+4,h:bh+4};
+        if(placed.every(p=>!overlap(box,p))){
+          return{cx,cy,box,vertical,tw,th,size};
+        }
+      }
+    }
+    return null;
+  }
+
+  let drawn=0;
+  words.forEach((entry,i)=>{
+    const size=getSize(entry.count);
+    const color=colors[i%colors.length];
+    const vertical=i>0&&i%3===0;
+    let res=tryPlace(entry.word,size,vertical)||tryPlace(entry.word,size,!vertical);
+    if(!res&&size>minSize){
+      const s2=Math.max(minSize,size-8);
+      res=tryPlace(entry.word,s2,false);
+    }
+    if(!res)return;
+    placed.push(res.box);
+    ctx.save();
+    ctx.fillStyle=color;
+    ctx.font=`${res.size}px ${font}`;
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    if(res.vertical){
+      ctx.translate(res.cx,res.cy);
+      ctx.rotate(-Math.PI/2);
+      ctx.fillText(entry.word,0,0);
+    } else {
+      ctx.fillText(entry.word,res.cx,res.cy);
+    }
+    ctx.restore();
+    drawn++;
+  });
+
+  const total=words.length;
+  if(drawn===total){
+    setStatus(`Done - ${drawn} word${drawn!==1?'s':''} placed.`,'ok');
+  } else if(drawn===0){
+    setStatus('Could not fit any words - try fewer words or a smaller font.','err');
+  } else {
+    setStatus(`Placed ${drawn} of ${total} words - ${total-drawn} didn't fit.`,'ok');
+  }
+}
+
+function download(){
+  const canvas=document.getElementById('wc');
+  const tempCanvas=document.createElement('canvas');
+  tempCanvas.width=canvas.width;
+  tempCanvas.height=canvas.height;
+  const tempCtx=tempCanvas.getContext('2d');
+  tempCtx.fillStyle=document.getElementById('bgSel').value;
+  tempCtx.fillRect(0,0,tempCanvas.width,tempCanvas.height);
+  tempCtx.drawImage(canvas,0,0);
+  const link=document.createElement('a');
+  link.href=tempCanvas.toDataURL('image/png');
+  link.download='word-cloud.png';
+  link.click();
+}
+</script>

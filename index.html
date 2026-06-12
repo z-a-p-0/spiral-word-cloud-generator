@@ -1,567 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spiral Word Cloud Generator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --primary:#6366f1;
-  --primary-dark:#4f46e5;
-  --gray-50:#f9fafb;
-  --gray-100:#f3f4f6;
-  --gray-200:#e5e7eb;
-  --gray-600:#4b5563;
-  --gray-700:#374151;
-  --gray-900:#111827;
-}
+  :root{
+    --primary:#6366f1;
+    --primary-dark:#4f46e5;
+    --primary-light:#818cf8;
+    --primary-bg:rgba(99,102,241,.08);
+    --primary-border:rgba(99,102,241,.25);
+    --gray-50:#f9fafb;
+    --gray-100:#f3f4f6;
+    --gray-200:#e5e7eb;
+    --gray-300:#d1d5db;
+    --gray-400:#9ca3af;
+    --gray-500:#6b7280;
+    --gray-600:#4b5563;
+    --gray-700:#374151;
+    --gray-800:#1f2937;
+    --gray-900:#111827;
+    --success:#10b981;
+    --success-bg:rgba(16,185,129,.1);
+    --success-border:rgba(16,185,129,.3);
+    --error:#ef4444;
+    --error-bg:rgba(239,68,68,.1);
+    --error-border:rgba(239,68,68,.3);
+    --warning:#f59e0b;
+    --warning-bg:rgba(245,158,11,.1);
+    --warning-border:rgba(245,158,11,.3);
+    --radius:10px;
+    --radius-sm:6px;
+    --shadow:0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md:0 4px 12px rgba(0,0,0,.08);
+    --shadow-lg:0 12px 32px rgba(0,0,0,.18);
+    --transition:.2s ease;
+  }
 
-html{scroll-behavior:smooth}
-body{
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
-  background:linear-gradient(135deg,#f9fafb 0%,#f3f4f6 100%);
-  color:var(--gray-900);
-  line-height:1.6;
-  min-height:100vh;
-}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    background:linear-gradient(135deg,#f9fafb 0%,#f3f4f6 100%);
+    color:var(--gray-900);
+    line-height:1.55;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
 
-.header{
-  background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
-  color:white;
-  padding:3rem 2rem;
-  text-align:center;
-  box-shadow:0 10px 30px rgba(99,102,241,0.1);
-}
+  /* ---------- Header ---------- */
+  .header{
+    background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);
+    color:#fff;
+    padding:2.25rem 1.5rem;
+    text-align:center;
+    box-shadow:0 4px 24px rgba(99,102,241,.18);
+  }
+  .header h1{font-size:2.1rem;font-weight:700;letter-spacing:-.02em}
+  .header p{margin-top:.4rem;opacity:.92;font-size:.95rem}
 
-.header h1{
-  font-size:2.5rem;
-  font-weight:700;
-  margin:0;
-}
+  /* ---------- Layout ---------- */
+  .container{max-width:980px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
 
-.container{
-  max-width:900px;
-  margin:0 auto;
-  padding:2rem 1.5rem;
-}
+  .top-bar{
+    display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;
+  }
+  .spacer{flex:1}
 
-.wc-wrap{padding:0}
+  .section{
+    background:#fff;
+    border:1px solid var(--gray-200);
+    border-radius:var(--radius);
+    padding:1.25rem 1.25rem 1.4rem;
+    margin-bottom:1.25rem;
+    box-shadow:var(--shadow);
+  }
+  .section-title{
+    font-size:.78rem;font-weight:700;color:var(--gray-600);
+    text-transform:uppercase;letter-spacing:.06em;
+    margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;
+  }
+  .section-title::before{
+    content:"";display:inline-block;width:3px;height:14px;
+    background:var(--primary);border-radius:2px;
+  }
 
-.top-bar{
-  display:flex;
-  align-items:center;
-  gap:1rem;
-  margin-bottom:1.5rem;
-  flex-wrap:wrap;
-}
+  /* ---------- Mode toggle ---------- */
+  .mode-toggle{
+    display:flex;background:var(--gray-100);border:1px solid var(--gray-200);
+    border-radius:var(--radius-sm);padding:3px;gap:2px;
+  }
+  .mode-btn{
+    padding:.5rem 1rem;font-size:13.5px;font-weight:500;background:transparent;
+    border:none;border-radius:5px;cursor:pointer;color:var(--gray-600);
+    transition:all var(--transition);font-family:inherit;
+    display:inline-flex;align-items:center;gap:.4rem;
+  }
+  .mode-btn:hover{color:var(--primary)}
+  .mode-btn.active{background:#fff;color:var(--primary);box-shadow:var(--shadow)}
+  .mode-btn i{font-size:16px}
 
-.mode-toggle{
-  display:flex;
-  border:2px solid var(--gray-200);
-  border-radius:8px;
-  overflow:hidden;
-  background:var(--gray-100);
-}
+  /* ---------- Buttons ---------- */
+  .btn{
+    padding:.55rem 1.1rem;font-size:14px;font-weight:500;
+    border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;
+    transition:all var(--transition);font-family:inherit;
+    display:inline-flex;align-items:center;gap:.4rem;line-height:1;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 2px 4px rgba(99,102,241,.25)}
+  .btn-primary:hover{box-shadow:0 4px 10px rgba(99,102,241,.35);transform:translateY(-1px)}
+  .btn-success{background:linear-gradient(135deg,var(--success),#059669);color:#fff;box-shadow:0 2px 4px rgba(16,185,129,.25)}
+  .btn-success:hover{box-shadow:0 4px 10px rgba(16,185,129,.35);transform:translateY(-1px)}
+  .btn-secondary{background:var(--gray-100);color:var(--gray-700);border-color:var(--gray-200)}
+  .btn-secondary:hover{background:var(--gray-200)}
+  .btn-ghost{background:transparent;color:var(--gray-500);padding:.45rem .6rem}
+  .btn-ghost:hover{background:var(--gray-100);color:var(--gray-800)}
+  .btn-lg{padding:.7rem 1.5rem;font-size:15px;font-weight:600}
+  .btn i{font-size:16px}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none !important}
 
-.mode-btn{
-  padding:0.5rem 1.25rem;
-  font-size:14px;
-  font-weight:500;
-  background:transparent;
-  border:none;
-  cursor:pointer;
-  color:var(--gray-600);
-  transition:all 0.2s;
-}
+  /* ---------- Form controls ---------- */
+  .ctrl-row{display:flex;gap:1.25rem;align-items:flex-end;flex-wrap:wrap}
+  .ctrl-group{display:flex;flex-direction:column;gap:.4rem}
+  .ctrl-label{font-size:11.5px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em}
+  .ctrl-row select,
+  .ctrl-row input[type=text],
+  .ctrl-row input[type=number]{
+    font-size:14px;padding:.5rem .75rem;border-radius:var(--radius-sm);
+    border:1px solid var(--gray-200);background:#fff;color:var(--gray-900);
+    font-weight:500;font-family:inherit;transition:all var(--transition);min-width:0;
+  }
+  .ctrl-row select{padding-right:1.8rem;cursor:pointer}
+  .ctrl-row select:hover,
+  .ctrl-row input[type=text]:hover,
+  .ctrl-row input[type=number]:hover{border-color:var(--gray-300)}
+  .ctrl-row select:focus,
+  .ctrl-row input[type=text]:focus,
+  .ctrl-row input[type=number]:focus{
+    outline:none;border-color:var(--primary);
+    box-shadow:0 0 0 3px var(--primary-bg);
+  }
 
-.mode-btn:hover{
-  color:var(--primary);
-}
+  /* Palette preview chips */
+  .palette-preview{
+    display:flex;gap:3px;height:8px;border-radius:3px;overflow:hidden;
+    border:1px solid var(--gray-200);min-width:160px;
+  }
+  .palette-preview span{flex:1;height:100%}
 
-.mode-btn.active{
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:white;
-  box-shadow:0 2px 4px rgba(99,102,241,0.2);
-}
+  /* ---------- Toggle switch ---------- */
+  .toggle{
+    display:inline-flex;align-items:center;gap:.55rem;cursor:pointer;
+    user-select:none;font-size:14px;color:var(--gray-700);font-weight:500;
+    padding-bottom:.5rem;
+  }
+  .toggle input{display:none}
+  .toggle-slider{
+    width:34px;height:20px;background:var(--gray-300);border-radius:10px;
+    position:relative;transition:background var(--transition);
+  }
+  .toggle-slider::after{
+    content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;
+    background:#fff;border-radius:50%;transition:transform var(--transition);
+    box-shadow:0 1px 2px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .toggle-slider{background:var(--primary)}
+  .toggle input:checked + .toggle-slider::after{transform:translateX(14px)}
 
-.spacer{flex:1}
+  /* ---------- Custom color picker ---------- */
+  .cp-trigger{
+    width:36px;height:36px;min-width:36px;border-radius:var(--radius-sm);
+    border:1px solid var(--gray-200);cursor:pointer;position:relative;padding:0;
+    background:#fff;overflow:hidden;transition:all var(--transition);
+  }
+  .cp-trigger:hover{border-color:var(--gray-400);transform:scale(1.05)}
+  .cp-trigger:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-bg)}
+  .cp-trigger-color{
+    position:absolute;inset:2px;border-radius:4px;background:var(--cp-color,#fff);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);
+  }
+  /* checkerboard background so transparent is visible */
+  .cp-trigger::before{
+    content:"";position:absolute;inset:2px;border-radius:4px;
+    background-image:
+      linear-gradient(45deg,#ddd 25%,transparent 25%),
+      linear-gradient(-45deg,#ddd 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#ddd 75%),
+      linear-gradient(-45deg,transparent 75%,#ddd 75%);
+    background-size:8px 8px;
+    background-position:0 0,0 4px,4px -4px,-4px 0;
+    z-index:0;
+  }
+  .cp-trigger-color{z-index:1}
 
-.ctrl-row{
-  display:flex;
-  gap:1rem;
-  align-items:center;
-  flex-wrap:wrap;
-  margin-bottom:1.5rem;
-}
+  .cp-popover{
+    position:fixed;z-index:1000;background:#fff;border-radius:var(--radius);
+    box-shadow:var(--shadow-lg);padding:1rem;width:268px;
+    border:1px solid var(--gray-200);opacity:0;pointer-events:none;
+    transform:translateY(-4px);transition:opacity .15s,transform .15s;
+  }
+  .cp-popover.open{opacity:1;pointer-events:auto;transform:translateY(0)}
 
-.ctrl-row label{
-  font-size:14px;
-  color:var(--gray-700);
-  font-weight:500;
-  white-space:nowrap;
-}
+  .cp-preview{
+    height:54px;border-radius:var(--radius-sm);margin-bottom:.85rem;
+    position:relative;border:1px solid var(--gray-200);overflow:hidden;
+  }
+  .cp-preview::before{
+    content:"";position:absolute;inset:0;
+    background-image:
+      linear-gradient(45deg,#e5e7eb 25%,transparent 25%),
+      linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#e5e7eb 75%),
+      linear-gradient(-45deg,transparent 75%,#e5e7eb 75%);
+    background-size:10px 10px;
+    background-position:0 0,0 5px,5px -5px,-5px 0;
+  }
+  .cp-preview-color{position:absolute;inset:0}
 
-.ctrl-row select{
-  font-size:14px;
-  padding:0.5rem 0.875rem;
-  border-radius:8px;
-  border:2px solid var(--gray-200);
-  background:white;
-  color:var(--gray-900);
-  cursor:pointer;
-  font-weight:500;
-  transition:all 0.2s;
-}
+  .cp-hex-row{
+    display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem;
+    padding-bottom:.85rem;border-bottom:1px solid var(--gray-100);
+  }
+  .cp-hex-row label{font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em}
+  .cp-hex-input{
+    flex:1;padding:.45rem .6rem;font-size:13px;border:1px solid var(--gray-200);
+    border-radius:5px;font-family:'SF Mono','Menlo','Consolas',monospace;
+    font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-800);
+  }
+  .cp-hex-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-bg)}
 
-.ctrl-row select:hover{
-  border-color:var(--primary);
-}
+  .cp-section-title{
+    font-size:10.5px;font-weight:700;color:var(--gray-500);
+    text-transform:uppercase;letter-spacing:.07em;margin:.5rem 0 .35rem;
+  }
+  .cp-row{
+    display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;
+  }
+  .cp-row > label{
+    font-size:11.5px;font-weight:700;color:var(--gray-600);width:14px;
+    text-align:center;font-family:'SF Mono','Menlo',monospace;
+  }
+  .cp-slider{
+    flex:1;-webkit-appearance:none;appearance:none;height:10px;
+    border-radius:5px;outline:none;background:var(--slider-bg,#e5e7eb);
+  }
+  .cp-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;width:18px;height:18px;background:#fff;
+    border-radius:50%;cursor:pointer;border:2px solid var(--gray-300);
+    box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .1s;
+  }
+  .cp-slider::-webkit-slider-thumb:hover{transform:scale(1.15);border-color:var(--primary)}
+  .cp-slider::-moz-range-thumb{
+    width:18px;height:18px;background:#fff;border-radius:50%;cursor:pointer;
+    border:2px solid var(--gray-300);box-shadow:0 1px 4px rgba(0,0,0,.25);
+  }
+  .cp-num{
+    width:48px;padding:.3rem .35rem;font-size:12px;border:1px solid var(--gray-200);
+    border-radius:4px;text-align:center;font-family:inherit;font-weight:600;
+    color:var(--gray-700);-moz-appearance:textfield;
+  }
+  .cp-num::-webkit-outer-spin-button,
+  .cp-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .cp-num:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px var(--primary-bg)}
 
-.ctrl-row select:focus{
-  outline:none;
-  border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(99,102,241,0.1);
-}
+  .cp-presets{
+    display:grid;grid-template-columns:repeat(9,1fr);gap:4px;
+    margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--gray-100);
+  }
+  .cp-preset{
+    aspect-ratio:1;border:1px solid var(--gray-200);border-radius:5px;
+    cursor:pointer;padding:0;transition:all var(--transition);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gray-500);background-clip:content-box;
+  }
+  .cp-preset:hover{transform:scale(1.15);border-color:var(--primary)}
+  .cp-preset.cp-random{background:var(--gray-100);font-size:14px}
+  .cp-preset.cp-random:hover{background:var(--primary);color:#fff;border-color:var(--primary)}
 
-.panel{display:none}
-.panel.active{display:block}
+  /* ---------- Custom palette editor ---------- */
+  .custom-palette{
+    display:none;flex-direction:column;gap:.6rem;margin-top:1rem;
+    padding:.85rem;background:var(--gray-50);border-radius:var(--radius-sm);
+    border:1px dashed var(--gray-300);
+  }
+  .custom-palette.active{display:flex}
+  .custom-palette-header{
+    font-size:12px;font-weight:600;color:var(--gray-600);
+    display:flex;align-items:center;gap:.4rem;
+  }
+  .custom-palette-list{
+    display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;
+  }
+  .custom-color-chip{
+    display:flex;align-items:center;gap:.35rem;padding:.25rem .25rem .25rem .35rem;
+    background:#fff;border-radius:var(--radius-sm);border:1px solid var(--gray-200);
+    transition:border-color var(--transition);
+  }
+  .custom-color-chip:hover{border-color:var(--gray-300)}
+  .custom-color-chip .cp-trigger{width:28px;height:28px;min-width:28px}
+  .custom-color-chip-hex{
+    font-family:'SF Mono','Menlo',monospace;font-size:12px;color:var(--gray-700);
+    font-weight:600;text-transform:uppercase;padding:0 .25rem;min-width:62px;
+  }
+  .custom-chip-remove{
+    width:24px;height:24px;border:none;border-radius:4px;background:transparent;
+    color:var(--gray-400);cursor:pointer;display:flex;align-items:center;
+    justify-content:center;font-size:15px;transition:all var(--transition);
+    margin-left:.15rem;
+  }
+  .custom-chip-remove:hover{background:var(--error-bg);color:var(--error)}
+  .custom-add-btn{
+    padding:.4rem .75rem;border:1px dashed var(--gray-300);border-radius:var(--radius-sm);
+    background:#fff;color:var(--gray-600);cursor:pointer;font-weight:500;font-size:13px;
+    display:inline-flex;align-items:center;gap:.35rem;transition:all var(--transition);
+    font-family:inherit;
+  }
+  .custom-add-btn:hover{
+    background:var(--primary);border-color:var(--primary);border-style:solid;color:#fff;
+  }
 
-textarea{
-  width:100%;
-  min-height:160px;
-  padding:1rem;
-  font-size:14px;
-  border:2px solid var(--gray-200);
-  border-radius:10px;
-  background:white;
-  color:var(--gray-900);
-  resize:vertical;
-  line-height:1.6;
-  font-family:inherit;
-  transition:all 0.2s;
-  margin-bottom:1.5rem;
-}
+  /* ---------- Panels ---------- */
+  .panel{display:none}
+  .panel.active{display:block}
+  .help-text{
+    font-size:13px;color:var(--gray-500);margin-bottom:.85rem;
+    display:flex;align-items:center;gap:.45rem;line-height:1.5;
+  }
+  .help-text i{color:var(--primary);font-size:15px;flex-shrink:0}
 
-textarea:hover{border-color:var(--gray-300)}
-textarea:focus{
-  outline:none;
-  border-color:var(--primary);
-  box-shadow:0 0 0 3px rgba(99,102,241,0.1);
-}
+  /* ---------- Word list ---------- */
+  .wl-table-wrap{
+    border:1px solid var(--gray-200);border-radius:var(--radius-sm);
+    overflow:hidden;margin-bottom:.75rem;background:#fff;
+  }
+  .wl-header{
+    display:grid;grid-template-columns:1fr 110px 44px;
+    background:var(--gray-50);border-bottom:1px solid var(--gray-200);
+    padding:.6rem .75rem;font-size:11.5px;font-weight:700;color:var(--gray-600);
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .wl-rows{max-height:300px;overflow-y:auto}
+  .wl-row{
+    display:grid;grid-template-columns:1fr 110px 44px;align-items:center;
+    border-bottom:1px solid var(--gray-100);transition:background var(--transition);
+  }
+  .wl-row:hover{background:var(--gray-50)}
+  .wl-row:last-child{border-bottom:none}
+  .wl-row input{
+    border:none;background:transparent;color:var(--gray-900);
+    padding:.65rem .75rem;font-size:14px;width:100%;outline:none;font-family:inherit;
+  }
+  .wl-row input:focus{background:var(--primary-bg)}
+  .wl-row input[type=number]{
+    border-left:1px solid var(--gray-200);text-align:right;
+    font-variant-numeric:tabular-nums;
+  }
+  .del-btn{
+    background:none;border:none;cursor:pointer;color:var(--gray-400);
+    font-size:18px;height:100%;display:flex;align-items:center;justify-content:center;
+    border-left:1px solid var(--gray-200);transition:color var(--transition),background var(--transition);
+  }
+  .del-btn:hover{color:var(--error);background:var(--error-bg)}
 
-.wordlist-hint{
-  font-size:13px;
-  color:var(--gray-600);
-  margin-bottom:1rem;
-  font-style:italic;
-}
+  textarea{
+    width:100%;min-height:170px;padding:1rem;font-size:14px;
+    border:1px solid var(--gray-200);border-radius:var(--radius-sm);
+    background:#fff;color:var(--gray-900);resize:vertical;line-height:1.6;
+    font-family:inherit;transition:all var(--transition);margin-bottom:.5rem;
+  }
+  textarea:hover{border-color:var(--gray-300)}
+  textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-bg)}
 
-.wl-table-wrap{
-  border:2px solid var(--gray-200);
-  border-radius:10px;
-  overflow:hidden;
-  margin-bottom:1rem;
-  box-shadow:0 2px 4px rgba(0,0,0,0.05);
-}
+  /* ---------- Status ---------- */
+  .status{
+    font-size:14px;padding:.75rem 1rem;border-radius:var(--radius-sm);
+    font-weight:500;display:flex;align-items:center;gap:.55rem;margin:0 0 1.25rem;
+    border:1px solid;transition:all var(--transition);
+  }
+  .status::before{
+    content:"";width:8px;height:8px;border-radius:50%;flex-shrink:0;
+  }
+  .status i{font-size:16px;flex-shrink:0}
+  .status.info{color:var(--gray-600);background:var(--gray-50);border-color:var(--gray-200)}
+  .status.info::before{background:var(--gray-400)}
+  .status.ok{color:var(--success);background:var(--success-bg);border-color:var(--success-border)}
+  .status.ok::before{background:var(--success)}
+  .status.err{color:var(--error);background:var(--error-bg);border-color:var(--error-border)}
+  .status.err::before{background:var(--error)}
+  .status.warn{color:var(--warning);background:var(--warning-bg);border-color:var(--warning-border)}
+  .status.warn::before{background:var(--warning)}
 
-.wl-header{
-  display:grid;
-  grid-template-columns:1fr 100px 45px;
-  background:linear-gradient(135deg,var(--gray-100),var(--gray-50));
-  border-bottom:2px solid var(--gray-200);
-  padding:0.75rem 1rem;
-  font-size:13px;
-  font-weight:600;
-  color:var(--gray-700);
-}
+  /* ---------- Canvas ---------- */
+  .canvas-wrap{
+    border:1px solid var(--gray-200);border-radius:var(--radius);
+    overflow:hidden;position:relative;background:#fff;
+    box-shadow:var(--shadow);min-height:200px;
+  }
+  .canvas-wrap.empty{
+    display:flex;align-items:center;justify-content:center;min-height:420px;
+    background:
+      linear-gradient(45deg,var(--gray-50) 25%,transparent 25%),
+      linear-gradient(-45deg,var(--gray-50) 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,var(--gray-50) 75%),
+      linear-gradient(-45deg,transparent 75%,var(--gray-50) 75%);
+    background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0;
+  }
+  .canvas-wrap canvas{display:block;width:100%;height:auto;max-height:75vh}
+  .canvas-empty{text-align:center;color:var(--gray-500)}
+  .canvas-empty i{font-size:3.5rem;color:var(--gray-300);display:block;margin-bottom:.5rem}
+  .canvas-empty h3{font-size:1rem;font-weight:600;color:var(--gray-700);margin-bottom:.25rem}
+  .canvas-empty p{font-size:13.5px;color:var(--gray-500)}
 
-.wl-rows{max-height:240px;overflow-y:auto}
+  /* ---------- Sample data link ---------- */
+  .sample-link{
+    background:none;border:none;color:var(--primary);font-size:13px;
+    cursor:pointer;font-weight:500;font-family:inherit;padding:0;
+    text-decoration:underline;text-decoration-color:transparent;
+    transition:text-decoration-color var(--transition);
+  }
+  .sample-link:hover{text-decoration-color:var(--primary)}
 
-.wl-row{
-  display:grid;
-  grid-template-columns:1fr 100px 45px;
-  align-items:center;
-  border-bottom:1px solid var(--gray-100);
-  transition:background 0.2s;
-}
+  /* ---------- Misc ---------- */
+  .sr-only{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+    clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
 
-.wl-row:hover{background:var(--gray-50)}
-.wl-row:last-child{border-bottom:none}
-
-.wl-row input{
-  border:none;
-  background:transparent;
-  color:var(--gray-900);
-  padding:0.75rem 1rem;
-  font-size:14px;
-  width:100%;
-  outline:none;
-  font-family:inherit;
-}
-
-.wl-row input:focus{
-  background:linear-gradient(135deg,rgba(99,102,241,0.05),transparent);
-}
-
-.wl-row input[type=number]{
-  border-left:1px solid var(--gray-200);
-  text-align:right;
-}
-
-.del-btn{
-  background:none;
-  border:none;
-  cursor:pointer;
-  color:var(--gray-400);
-  font-size:18px;
-  padding:0 0.75rem;
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-left:1px solid var(--gray-200);
-  transition:color 0.2s;
-}
-
-.del-btn:hover{color:#ef4444}
-
-.add-btn{
-  font-size:14px;
-  padding:0.5rem 1rem;
-  background:var(--gray-100);
-  border:2px solid var(--gray-200);
-  border-radius:8px;
-  cursor:pointer;
-  color:var(--gray-700);
-  font-weight:500;
-  margin-bottom:1.5rem;
-  transition:all 0.2s;
-}
-
-.add-btn:hover{
-  background:var(--primary);
-  border-color:var(--primary);
-  color:white;
-}
-
-.gen-btn{
-  padding:0.75rem 2rem;
-  font-size:15px;
-  font-weight:600;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:white;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  transition:all 0.3s;
-  box-shadow:0 4px 12px rgba(99,102,241,0.3);
-  display:inline-flex;
-  align-items:center;
-  gap:0.5rem;
-}
-
-.gen-btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 6px 16px rgba(99,102,241,0.4);
-}
-
-.canvas-wrap{
-  margin-top:1.5rem;
-  border:2px solid var(--gray-200);
-  border-radius:12px;
-  overflow:hidden;
-  position:relative;
-  background:white;
-  box-shadow:0 4px 6px rgba(0,0,0,0.07);
-}
-
-canvas{
-  display:block;
-  width:100%;
-  height:auto;
-}
-
-.status{
-  font-size:14px;
-  padding:1rem;
-  min-height:28px;
-  border-radius:8px;
-  margin:1rem 0;
-  font-weight:500;
-  display:flex;
-  align-items:center;
-  gap:0.5rem;
-}
-
-.status.ok{
-  color:#10b981;
-  background:rgba(16,185,129,0.1);
-  border:1px solid rgba(16,185,129,0.3);
-}
-
-.status.err{
-  color:#ef4444;
-  background:rgba(239,68,68,0.1);
-  border:1px solid rgba(239,68,68,0.3);
-}
-
-.status.info{
-  color:var(--gray-600);
-  background:var(--gray-50);
-  border:1px solid var(--gray-200);
-}
-
-.palette-dot{
-  display:inline-block;
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  margin-right:3px;
-  vertical-align:middle;
-}
+  /* ---------- Responsive ---------- */
+  @media (max-width:720px){
+    .header{padding:1.5rem 1rem}
+    .header h1{font-size:1.6rem}
+    .container{padding:1rem}
+    .section{padding:1rem}
+    .ctrl-row{flex-direction:column;align-items:stretch;gap:.85rem}
+    .ctrl-group{width:100%}
+    .ctrl-row select,.ctrl-row input{width:100%}
+    .top-bar{flex-direction:column;align-items:stretch}
+    .top-bar .spacer{display:none}
+    .top-bar .btn{justify-content:center}
+    .cp-popover{width:calc(100vw - 24px);max-width:300px}
+    .mode-toggle{width:100%}
+    .mode-btn{flex:1;justify-content:center}
+  }
 </style>
-<div class="header">
-  <h1>Word Cloud Generator</h1>
-</div>
+</head>
+<body>
 
-<div class="container">
-  <div class="wc-wrap">
-    <div class="top-bar">
-      <div class="mode-toggle">
-        <button class="mode-btn active" id="btnPaste" onclick="setMode('paste')">Paste text</button>
-        <button class="mode-btn" id="btnList" onclick="setMode('list')">Word list</button>
-      </div>
-      <div class="spacer"></div>
-      <button class="gen-btn" onclick="generate()"><i class="ti ti-wand" aria-hidden="true"></i> Generate</button>
-      <button class="gen-btn" id="dlBtn" onclick="download()" style="background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 12px rgba(16,185,129,0.3)" title="Download as PNG"><i class="ti ti-download" aria-hidden="true"></i> Download</button>
+<h2 class="sr-only">Interactive spiral word cloud generator</h2>
+
+<header class="header">
+  <h1>Spiral Word Cloud Generator</h1>
+  <p>Visualise word frequencies with customisable styles, handles multiple languages</p>
+</header>
+
+<main class="container">
+
+  <div class="top-bar">
+    <div class="mode-toggle" role="tablist" aria-label="Input mode">
+      <button class="mode-btn active" data-mode="list" role="tab" aria-selected="true">
+        <i class="ti ti-list" aria-hidden="true"></i> Word list
+      </button>
+      <button class="mode-btn" data-mode="paste" role="tab" aria-selected="false">
+        <i class="ti ti-file-text" aria-hidden="true"></i> Paste text
+      </button>
     </div>
+    <div class="spacer"></div>
+    <button class="btn btn-primary btn-lg" id="genBtn">
+      <i class="ti ti-wand" aria-hidden="true"></i> Generate
+    </button>
+  </div>
 
+  <!-- Style section -->
+  <section class="section" aria-labelledby="styleTitle">
+    <div class="section-title" id="styleTitle">Style</div>
     <div class="ctrl-row">
-      <label>Font</label>
-      <select id="fontSel">
-        <option value="sans-serif">Sans-serif</option>
-        <option value="serif">Serif</option>
-        <option value="monospace">Monospace</option>
-        <option value="Georgia,serif">Georgia</option>
-        <option value="'Courier New',monospace">Courier New</option>
-        <option value="Impact,sans-serif">Impact</option>
-      </select>
-      <label style="margin-left:1rem">Palette</label>
-      <select id="palSel">
-        <option value="vivid">Vivid</option>
-        <option value="ocean">Ocean</option>
-        <option value="forest">Forest</option>
-        <option value="sunset">Sunset</option>
-        <option value="mono">Monochrome</option>
-        <option value="candy">Candy</option>
-      </select>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label" for="fontSel">Font</label>
+        <select id="fontSel">
+          <option value="sans-serif">Sans-serif</option>
+          <option value="serif">Serif</option>
+          <option value="monospace">Monospace</option>
+          <option value="Georgia,serif">Georgia</option>
+          <option value="'Courier New',monospace">Courier New</option>
+          <option value="Impact,sans-serif">Impact</option>
+        </select>
+      </div>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label" for="palSel">Palette</label>
+        <select id="palSel">
+          <option value="vivid">Vivid</option>
+          <option value="ocean">Ocean</option>
+          <option value="forest">Forest</option>
+          <option value="sunset">Sunset</option>
+          <option value="mono">Monochrome</option>
+          <option value="candy">Candy</option>
+          <option value="custom">Custom</option>
+        </select>
+        <div class="palette-preview" id="palettePreview" aria-hidden="true"></div>
+      </div>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label">Background</label>
+        <button class="cp-trigger" id="bgSel" aria-label="Choose background colour" style="--cp-color:#ffffff">
+          <span class="cp-trigger-color"></span>
+        </button>
+      </div>
+
+      <div class="ctrl-group">
+        <label class="ctrl-label">&nbsp;</label>
+        <label class="toggle" title="Shuffle word order before placement">
+          <input type="checkbox" id="randPos">
+          <span class="toggle-slider" aria-hidden="true"></span>
+          <span>Randomise order</span>
+        </label>
+      </div>
+
     </div>
 
-    <div id="panelPaste" class="panel active">
-      <textarea id="txtInput" placeholder="Paste any text here: any language, any mix of languages…"></textarea>
+    <div id="customPalette" class="custom-palette" aria-label="Custom palette editor">
+      <div class="custom-palette-header">
+        <i class="ti ti-palette" aria-hidden="true"></i> Custom colours
+        <span style="color:var(--gray-500);font-weight:500;margin-left:auto">Click a swatch to edit · use the × to remove</span>
+      </div>
+      <div class="custom-palette-list" id="customPaletteList"></div>
+      <div>
+        <button class="custom-add-btn" id="addColorBtn" type="button">
+          <i class="ti ti-plus" aria-hidden="true"></i> Add colour
+        </button>
+      </div>
     </div>
-    <div id="panelList" class="panel">
-      <p class="wordlist-hint">Enter words and optional weights (leave weight blank to default to 1).</p>
+  </section>
+
+  <!-- Content section -->
+  <section class="section" aria-labelledby="contentTitle">
+    <div class="section-title" id="contentTitle">Content</div>
+
+    <div id="panelList" class="panel active">
+      <p class="help-text">
+        <i class="ti ti-info-circle" aria-hidden="true"></i>
+        Enter each word and an optional weight. Blank weight defaults to 1; higher values make the word appear larger.
+      </p>
       <div class="wl-table-wrap">
-        <div class="wl-header"><span>Word</span><span style="text-align:right">Weight</span><span></span></div>
+        <div class="wl-header">
+          <span>Word</span>
+          <span style="text-align:right">Weight</span>
+          <span></span>
+        </div>
         <div class="wl-rows" id="wlRows"></div>
       </div>
-      <button class="add-btn" onclick="addRow()"><i class="ti ti-plus" aria-hidden="true"></i> Add row</button>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-secondary" id="addRowBtn">
+          <i class="ti ti-plus" aria-hidden="true"></i> Add row
+        </button>
+        <button class="btn btn-ghost" id="clearListBtn" title="Remove all rows">
+          <i class="ti ti-trash" aria-hidden="true"></i> Clear list
+        </button>
+      </div>
     </div>
 
-    <div class="status info" id="status">Status: Ready! Paste text or build a word list, then click Generate.</div>
-    <div class="canvas-wrap">
-      <canvas id="wc" width="900" height="600"></canvas>
+    <div id="panelPaste" class="panel">
+      <p class="help-text">
+        <i class="ti ti-info-circle" aria-hidden="true"></i>
+        Paste any text in any language. Common words are filtered automatically.
+        <button class="sample-link" id="sampleBtn" type="button" style="margin-left:auto">Try sample text</button>
+      </p>
+      <textarea id="txtInput" placeholder="Paste your text here..." rows="9" spellcheck="false"></textarea>
     </div>
+  </section>
+
+  <div class="status info" id="status" role="status" aria-live="polite">
+    Ready — build a word list or paste text, then click Generate.
   </div>
-</div>
+
+  <div class="canvas-wrap empty" id="canvasWrap">
+    <div class="canvas-empty" id="canvasEmpty">
+      <i class="ti ti-cloud" aria-hidden="true"></i>
+      <h3>No cloud yet</h3>
+      <p>Click <strong>Generate</strong> to build your word cloud</p>
+    </div>
+    <canvas id="wc" width="900" height="600" style="display:none"></canvas>
+  </div>
+
+  <div class="canvas-actions" id="canvasActions" style="display:none;gap:.5rem;justify-content:center;margin-top:1rem">
+    <button class="btn btn-secondary" id="dlBtn">
+      <i class="ti ti-download" aria-hidden="true"></i> Download
+    </button>
+    <button class="btn btn-primary" id="reshuffleBtn">
+      <i class="ti ti-reload" aria-hidden="true"></i> Randomise positions
+    </button>
+  </div>
+
+</main>
+
 <script>
-const PALETTES={
-  vivid:['#E24B4A','#378ADD','#1D9E75','#BA7517','#7F77DD','#D85A30','#3B6D11','#993556'],
-  ocean:['#042C53','#185FA5','#378ADD','#85B7EB','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB'],
-  forest:['#173404','#3B6D11','#639922','#97C459','#04342C','#0F6E56','#1D9E75','#5DCAA5'],
-  sunset:['#4A1B0C','#993C1D','#D85A30','#F0997B','#412402','#854F0B','#EF9F27','#FAC775'],
-  mono:['#2C2C2A','#444441','#5F5E5A','#888780','#B4B2A9','#D3D1C7'],
-  candy:['#7F77DD','#D4537E','#378ADD','#D85A30','#1D9E75','#BA7517','#534AB7','#993556']
+/* =========================================================
+   PALETTES + STATE
+   ========================================================= */
+const PALETTES = {
+  vivid:  ['#E24B4A','#378ADD','#1D9E75','#BA7517','#7F77DD','#D85A30','#3B6D11','#993556'],
+  ocean:  ['#042C53','#185FA5','#378ADD','#85B7EB','#0F6E56','#1D9E75','#5DCAA5','#9FE1CB'],
+  forest: ['#173404','#3B6D11','#639922','#97C459','#04342C','#0F6E56','#1D9E75','#5DCAA5'],
+  sunset: ['#4A1B0C','#993C1D','#D85A30','#F0997B','#412402','#854F0B','#EF9F27','#FAC775'],
+  mono:   ['#2C2C2A','#444441','#5F5E5A','#888780','#B4B2A9','#D3D1C7'],
+  candy:  ['#7F77DD','#D4537E','#378ADD','#D85A30','#1D9E75','#BA7517','#534AB7','#993556']
 };
 
-const STOPWORDS=new Set(['the','and','for','that','this','with','are','was','have','from','they','will','been','were','has','had','but','not','you','all','can','her','his','him','she','our','out','use','who','its','how','now','one','also','more','their','there','than','into','about','which','when','what','would','could','should','your','then','them','some','after','over','just','like','such','very','even','most','make','time','year','each','only','way','many','while','where','these','those','both','also','other','first','last','long','same','back','take','know','new','good','old','own','well','much','any','few','two','three','four','five','six','seven','eight','nine','ten','being','made','said','did','does','doing','having','get','got','getting','let','say','see','go','going','come','came','coming','give','given','take','took','taking','put','puts','putting','work','working','works','worked','used','using','seem','seems','seemed','still','ever','never','always','already','here','too','so','no','yes','up','down','in','on','at','to','of','a','an','is','it','be','as','by','if','or','we','us','me','my','am']);
+const STOPWORDS = new Set([
+  'the','and','for','that','this','with','are','was','have','from','they','will','been','were',
+  'has','had','but','not','you','all','can','her','his','him','she','our','out','use','who','its',
+  'how','now','one','also','more','their','there','than','into','about','which','when','what',
+  'would','could','should','your','then','them','some','after','over','just','like','such','very',
+  'even','most','make','time','year','each','only','way','many','while','where','these','those',
+  'both','other','first','last','long','same','back','take','know','new','good','old','own','well',
+  'much','any','few','two','three','four','five','six','seven','eight','nine','ten','being','made',
+  'said','did','does','doing','having','get','got','getting','let','say','see','go','going','come',
+  'came','coming','give','given','took','taking','put','puts','putting','work','working','works',
+  'worked','used','using','seem','seems','seemed','still','ever','never','always','already','here',
+  'too','so','no','yes','up','down','in','on','at','to','of','a','an','is','it','be','as','by','if',
+  'or','we','us','me','my','am'
+]);
 
-let mode='paste';
-let wlData=[{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''}];
+const SAMPLE_TEXT = `The art of programming is the art of organising complexity, of mastering multitude and avoiding chaos. A good programme is one that does its job quietly, without surprising the user, without forcing them to think about the things that are not relevant to the task at hand. Clarity is the most important quality of a well-written piece of code. Code that is clear is easier to read, easier to maintain, and easier to extend. When you write code, write it for the human who will read it next, not just for the machine that will execute it. The best code is the code that reads like prose — code that you can read from top to bottom and understand what it does without having to mentally execute it. Use meaningful names for variables and functions. Keep functions small and focused on a single task. Avoid deeply nested structures. Write tests. Refactor relentlessly. These are the habits that separate great programmers from average ones.`;
 
-function setMode(m){
-  mode=m;
-  document.getElementById('btnPaste').classList.toggle('active',m==='paste');
-  document.getElementById('btnList').classList.toggle('active',m==='list');
-  document.getElementById('panelPaste').classList.toggle('active',m==='paste');
-  document.getElementById('panelList').classList.toggle('active',m==='list');
+let mode = 'list';
+let wlData = [{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''},{w:'',v:''}];
+let customPalette = ['#E24B4A','#378ADD','#1D9E75','#BA7517'];
+let bgColor = '#ffffff';
+
+/* =========================================================
+   CUSTOM COLOUR PICKER
+   ========================================================= */
+const Picker = (() => {
+  const PRESETS = ['#ef4444','#f59e0b','#eab308','#22c55e','#10b981','#06b6d4','#3b82f6','#8b5cf6','#ec4899'];
+
+  const popover = document.createElement('div');
+  popover.className = 'cp-popover';
+  popover.innerHTML = `
+    <div class="cp-preview"><div class="cp-preview-color"></div></div>
+    <div class="cp-hex-row">
+      <label>HEX</label>
+      <input type="text" class="cp-hex-input" maxlength="7" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="cp-section-title">HSL</div>
+    <div class="cp-row">
+      <label>H</label>
+      <input type="range" class="cp-slider cp-h" min="0" max="360">
+      <input type="number" class="cp-num cp-h-num" min="0" max="360">
+    </div>
+    <div class="cp-row">
+      <label>S</label>
+      <input type="range" class="cp-slider cp-s" min="0" max="100">
+      <input type="number" class="cp-num cp-s-num" min="0" max="100">
+    </div>
+    <div class="cp-row">
+      <label>L</label>
+      <input type="range" class="cp-slider cp-l" min="0" max="100">
+      <input type="number" class="cp-num cp-l-num" min="0" max="100">
+    </div>
+    <div class="cp-presets" id="cpPresets"></div>
+  `;
+  document.body.appendChild(popover);
+
+  // Build presets
+  const presetsEl = popover.querySelector('#cpPresets');
+  PRESETS.forEach(c => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cp-preset';
+    b.style.background = c;
+    b.title = c.toUpperCase();
+    b.addEventListener('click', () => setColor(c));
+    presetsEl.appendChild(b);
+  });
+  const rand = document.createElement('button');
+  rand.type = 'button';
+  rand.className = 'cp-preset cp-random';
+  rand.title = 'Random colour';
+  rand.innerHTML = '<i class="ti ti-reload" aria-hidden="true"></i>';
+  rand.addEventListener('click', () => {
+    const h = Math.floor(Math.random() * 360);
+    const s = 55 + Math.floor(Math.random() * 35);
+    const l = 40 + Math.floor(Math.random() * 20);
+    const {r,g,b} = hslToRgb(h,s,l);
+    setColor(rgbToHex(r,g,b));
+  });
+  presetsEl.appendChild(rand);
+
+  // Color conversions
+  function normalize(hex){
+    let h = String(hex||'').trim().toLowerCase();
+    if (h.startsWith('#')) h = h.slice(1);
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
+    if (!/^[0-9a-f]{6}$/.test(h)) h = 'ffffff';
+    return '#' + h;
+  }
+  function hexToRgb(hex){
+    const h = normalize(hex).slice(1);
+    return { r: parseInt(h.slice(0,2),16), g: parseInt(h.slice(2,4),16), b: parseInt(h.slice(4,6),16) };
+  }
+  function rgbToHex(r,g,b){
+    const f = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2,'0');
+    return '#' + f(r) + f(g) + f(b);
+  }
+  function rgbToHsl(r,g,b){
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b);
+    let h,s; const l=(max+min)/2;
+    if (max===min){ h=s=0; }
+    else {
+      const d=max-min;
+      s = l>0.5 ? d/(2-max-min) : d/(max+min);
+      switch(max){
+        case r: h=(g-b)/d+(g<b?6:0); break;
+        case g: h=(b-r)/d+2; break;
+        case b: h=(r-g)/d+4; break;
+      }
+      h/=6;
+    }
+    return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+  }
+  function hslToRgb(h,s,l){
+    h/=360; s/=100; l/=100;
+    let r,g,b;
+    if (s===0){ r=g=b=l; }
+    else {
+      const q = l<0.5 ? l*(1+s) : l+s-l*s;
+      const p = 2*l-q;
+      const t = (t)=>{ if(t<0) t+=1; if(t>1) t-=1;
+        if(t<1/6) return p+(q-p)*6*t;
+        if(t<1/2) return q;
+        if(t<2/3) return p+(q-p)*(2/3-t)*6;
+        return p; };
+      r=t(h+1/3); g=t(h); b=t(h-1/3);
+    }
+    return { r: Math.round(r*255), g: Math.round(g*255), b: Math.round(b*255) };
+  }
+
+  // Picker state
+  let active = null;        // { trigger, get, set, onChange }
+
+  function open(trigger, get, set, onChange){
+    if (active && active.trigger === trigger){ close(); return; }
+    close();
+    active = { trigger, get, set, onChange };
+    setColor(get(), true);
+    position();
+    requestAnimationFrame(() => popover.classList.add('open'));
+    setTimeout(() => {
+      document.addEventListener('mousedown', onDocClick, true);
+      document.addEventListener('keydown', onKey);
+      window.addEventListener('resize', position);
+      window.addEventListener('scroll', position, true);
+    }, 0);
+  }
+  function close(){
+    if (!active) return;
+    popover.classList.remove('open');
+    document.removeEventListener('mousedown', onDocClick, true);
+    document.removeEventListener('keydown', onKey);
+    window.removeEventListener('resize', position);
+    window.removeEventListener('scroll', position, true);
+    active = null;
+  }
+  function onDocClick(e){
+    if (popover.contains(e.target)) return;
+    if (active && active.trigger.contains(e.target)) return;
+    close();
+  }
+  function onKey(e){ if (e.key === 'Escape') close(); }
+
+  function position(){
+    if (!active) return;
+    const r = active.trigger.getBoundingClientRect();
+    const pr = popover.getBoundingClientRect();
+    const margin = 8;
+    let top  = r.bottom + 6;
+    let left = r.left + r.width/2 - pr.width/2;
+    if (top + pr.height > window.innerHeight - margin){
+      top = r.top - pr.height - 6;
+    }
+    if (top < margin) top = margin;
+    if (left < margin) left = margin;
+    if (left + pr.width > window.innerWidth - margin){
+      left = window.innerWidth - pr.width - margin;
+    }
+    popover.style.top  = top  + 'px';
+    popover.style.left = left + 'px';
+  }
+
+  function setColor(hex, silent){
+    if (!active) return;
+    const c = normalize(hex);
+    active.set(c);
+    active.trigger.style.setProperty('--cp-color', c);
+    if (popover.querySelector('.cp-preview-color')){
+      popover.querySelector('.cp-preview-color').style.background = c;
+    }
+    const rgb = hexToRgb(c);
+    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+    const hexInput = popover.querySelector('.cp-hex-input');
+    if (document.activeElement !== hexInput) hexInput.value = c.toUpperCase();
+    popover.querySelector('.cp-h').value     = hsl.h;
+    popover.querySelector('.cp-s').value     = hsl.s;
+    popover.querySelector('.cp-l').value     = hsl.l;
+    popover.querySelector('.cp-h-num').value = hsl.h;
+    popover.querySelector('.cp-s-num').value = hsl.s;
+    popover.querySelector('.cp-l-num').value = hsl.l;
+    popover.querySelector('.cp-h').style.background =
+      `linear-gradient(to right,hsl(0,${hsl.s}%,${hsl.l}%),hsl(60,${hsl.s}%,${hsl.l}%),hsl(120,${hsl.s}%,${hsl.l}%),hsl(180,${hsl.s}%,${hsl.l}%),hsl(240,${hsl.s}%,${hsl.l}%),hsl(300,${hsl.s}%,${hsl.l}%),hsl(360,${hsl.s}%,${hsl.l}%))`;
+    popover.querySelector('.cp-s').style.background =
+      `linear-gradient(to right,hsl(${hsl.h},0%,${hsl.l}%),hsl(${hsl.h},100%,${hsl.l}%))`;
+    popover.querySelector('.cp-l').style.background =
+      `linear-gradient(to right,#000,hsl(${hsl.h},${hsl.s}%,50%),#fff)`;
+    if (!silent && active.onChange) active.onChange(c);
+  }
+
+  // Wire up slider/number/hex inputs (once)
+  function bindInputs(){
+    const hex = popover.querySelector('.cp-hex-input');
+    hex.addEventListener('input', () => {
+      let v = hex.value.trim();
+      if (v && !v.startsWith('#')) v = '#' + v;
+      if (/^#[0-9a-f]{3}$/i.test(v)) v = '#' + v.slice(1).split('').map(c=>c+c).join('');
+      if (/^#[0-9a-f]{6}$/i.test(v)) setColor(v);
+    });
+    hex.addEventListener('keydown', e => { if (e.key === 'Enter') hex.blur(); });
+    hex.addEventListener('blur', () => { if (active) hex.value = active.get().toUpperCase(); });
+
+    const linkPair = (slider, num) => {
+      const fire = (val) => {
+        if (!active) return;
+        const v = Math.max(parseInt(slider.min), Math.min(parseInt(slider.max), parseInt(val)||0));
+        slider.value = v; num.value = v;
+        const h = +popover.querySelector('.cp-h').value;
+        const s = +popover.querySelector('.cp-s').value;
+        const l = +popover.querySelector('.cp-l').value;
+        const {r,g,b} = hslToRgb(h,s,l);
+        setColor(rgbToHex(r,g,b));
+      };
+      slider.addEventListener('input', () => fire(slider.value));
+      num.addEventListener('input', () => fire(num.value));
+      num.addEventListener('blur', () => { if (active) fire(num.value); });
+    };
+    linkPair(popover.querySelector('.cp-h'), popover.querySelector('.cp-h-num'));
+    linkPair(popover.querySelector('.cp-s'), popover.querySelector('.cp-s-num'));
+    linkPair(popover.querySelector('.cp-l'), popover.querySelector('.cp-l-num'));
+  }
+  bindInputs();
+
+  // Public: attach a trigger
+  function attach(trigger, get, set, onChange){
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.addEventListener('click', e => {
+      e.stopPropagation();
+      if (active && active.trigger === trigger){ close(); }
+      else { open(trigger, get, set, onChange); trigger.setAttribute('aria-expanded','true'); }
+    });
+    const origSet = set;
+    return {
+      getValue: get,
+      setValue: (v) => { origSet(normalize(v)); trigger.style.setProperty('--cp-color', normalize(v)); },
+      close
+    };
+  }
+  return { attach, close, normalize, hexToRgb, rgbToHex, rgbToHsl, hslToRgb };
+})();
+
+/* =========================================================
+   UI HELPERS
+   ========================================================= */
+function escH(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 }
+function setStatus(msg, type='info'){
+  const el = document.getElementById('status');
+  const icon = type==='ok' ? 'ti-check' : type==='err' ? 'ti-alert-circle' : type==='warn' ? 'ti-alert-triangle' : 'ti-info-circle';
+  el.className = 'status ' + type;
+  el.innerHTML = `<i class="ti ${icon}" aria-hidden="true"></i><span>${msg}</span>`;
+}
+
+/* =========================================================
+   MODE TOGGLE
+   ========================================================= */
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => setMode(btn.dataset.mode));
+});
+function setMode(m){
+  mode = m;
+  document.getElementById('panelList').classList.toggle('active', m==='list');
+  document.getElementById('panelPaste').classList.toggle('active', m==='paste');
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    const on = b.dataset.mode === m;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on);
+  });
+  setStatus(m==='list'
+    ? 'Word list mode — add words and weights, then click Generate.'
+    : 'Paste text mode — paste any text, then click Generate.', 'info');
+}
+
+/* =========================================================
+   PALETTE PICKER
+   ========================================================= */
+const palSel = document.getElementById('palSel');
+const customPaletteEl = document.getElementById('customPalette');
+const customPaletteList = document.getElementById('customPaletteList');
+const palettePreview = document.getElementById('palettePreview');
+
+function updatePalettePreview(){
+  const key = palSel.value;
+  const cols = key === 'custom' ? customPalette : PALETTES[key];
+  palettePreview.innerHTML = cols.map(c => `<span style="background:${c}"></span>`).join('');
+}
+function handlePaletteChange(){
+  const isCustom = palSel.value === 'custom';
+  customPaletteEl.classList.toggle('active', isCustom);
+  updatePalettePreview();
+}
+palSel.addEventListener('change', handlePaletteChange);
+
+function renderCustomPalette(){
+  customPaletteList.innerHTML = '';
+  customPalette.forEach((color, index) => {
+    const chip = document.createElement('div');
+    chip.className = 'custom-color-chip';
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'cp-trigger';
+    trigger.style.setProperty('--cp-color', color);
+    trigger.innerHTML = '<span class="cp-trigger-color"></span>';
+    trigger.setAttribute('aria-label', `Edit custom colour ${index+1}`);
+
+    const hexLabel = document.createElement('span');
+    hexLabel.className = 'custom-color-chip-hex';
+    hexLabel.textContent = color.toUpperCase();
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'custom-chip-remove';
+    remove.innerHTML = '<i class="ti ti-x" aria-hidden="true"></i>';
+    remove.setAttribute('aria-label', 'Remove colour');
+    remove.addEventListener('click', () => removeCustomColor(index));
+
+    chip.append(trigger, hexLabel, remove);
+    customPaletteList.appendChild(chip);
+
+    Picker.attach(trigger,
+      () => customPalette[index],
+      (v) => {
+        customPalette[index] = v;
+        hexLabel.textContent = v.toUpperCase();
+        updatePalettePreview();
+      }
+    );
+  });
+  updatePalettePreview();
+}
+function addCustomColor(){
+  // Suggest a colour not too similar to existing ones
+  const next = ['#7F77DD','#D4537E','#1D9E75','#BA7517','#378ADD','#D85A30'];
+  customPalette.push(next[customPalette.length % next.length]);
+  renderCustomPalette();
+}
+function removeCustomColor(index){
+  if (customPalette.length <= 1) return;
+  customPalette.splice(index, 1);
+  renderCustomPalette();
+}
+document.getElementById('addColorBtn').addEventListener('click', addCustomColor);
+
+/* =========================================================
+   WORD LIST
+   ========================================================= */
+const wlRowsEl = document.getElementById('wlRows');
 
 function renderRows(){
-  const c=document.getElementById('wlRows');
-  c.innerHTML='';
-  wlData.forEach((r,i)=>{
-    const div=document.createElement('div');
-    div.className='wl-row';
-    div.innerHTML=`<input type="text" placeholder="word" value="${escH(r.w)}" oninput="wlData[${i}].w=this.value">
-      <input type="number" placeholder="1" value="${escH(r.v)}" min="0.01" step="any" oninput="wlData[${i}].v=this.value">
-      <button class="del-btn" onclick="delRow(${i})" aria-label="Delete row"><i class="ti ti-x" aria-hidden="true"></i></button>`;
-    c.appendChild(div);
+  wlRowsEl.innerHTML = '';
+  wlData.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = 'wl-row';
+    div.innerHTML =
+      `<input type="text" placeholder="word" value="${escH(r.w)}" aria-label="Word ${i+1}">
+       <input type="number" placeholder="1" min="0.01" step="any" value="${escH(r.v)}" aria-label="Weight for word ${i+1}">
+       <button class="del-btn" type="button" aria-label="Delete row ${i+1}"><i class="ti ti-x" aria-hidden="true"></i></button>`;
+    const [wInput, vInput, del] = div.children;
+    wInput.addEventListener('input', e => wlData[i].w = e.target.value);
+    vInput.addEventListener('input', e => wlData[i].v = e.target.value);
+    del.addEventListener('click', () => delRow(i));
+    wlRowsEl.appendChild(div);
   });
 }
-function escH(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}
-function addRow(){wlData.push({w:'',v:''});renderRows()}
-function delRow(i){wlData.splice(i,1);if(!wlData.length)wlData.push({w:'',v:''});renderRows()}
-
-renderRows();
-
-function setStatus(msg,type='info'){
-  const el=document.getElementById('status');
-  el.textContent=msg;
-  el.className='status '+type;
+function addRow(){
+  wlData.push({w:'',v:''});
+  renderRows();
+  // focus the new word input
+  const inputs = wlRowsEl.querySelectorAll('.wl-row input[type=text]');
+  if (inputs.length) inputs[inputs.length-1].focus();
 }
+function delRow(i){
+  wlData.splice(i, 1);
+  if (!wlData.length) wlData.push({w:'',v:''});
+  renderRows();
+}
+document.getElementById('addRowBtn').addEventListener('click', addRow);
+document.getElementById('clearListBtn').addEventListener('click', () => {
+  wlData = [{w:'',v:''}];
+  renderRows();
+});
 
+/* =========================================================
+   BACKGROUND COLOUR PICKER
+   ========================================================= */
+const bgTrigger = document.getElementById('bgSel');
+Picker.attach(bgTrigger,
+  () => bgColor,
+  (v) => { bgColor = v; }
+);
+
+/* =========================================================
+   SAMPLE / SHORTCUTS
+   ========================================================= */
+document.getElementById('sampleBtn').addEventListener('click', () => {
+  document.getElementById('txtInput').value = SAMPLE_TEXT;
+  setStatus('Sample text loaded — click Generate to build the cloud.', 'info');
+});
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    e.preventDefault();
+    generate();
+  }
+});
+
+/* =========================================================
+   WORD PROCESSING + PLACEMENT
+   ========================================================= */
 function processText(txt){
-  const norm=txt.normalize('NFC');
-  const tokens=norm.split(/[\s\u200B\u3000\u2000-\u206F\p{Z}\p{P}\p{S}]+/u)
-    .map(t=>t.replace(/^\p{P}+|\p{P}+$/gu,''))
-    .filter(t=>{
-      if(!t||t.length<2)return false;
-      const hasLetter=/\p{L}/u.test(t);
-      if(!hasLetter)return false;
-      const lower=t.toLowerCase();
-      if(STOPWORDS.has(lower))return false;
-      if(/^\d+$/.test(t))return false;
+  const norm = txt.normalize('NFC');
+  const tokens = norm
+    .split(/[\s\u200B\u3000\u2000-\u206F\p{Z}\p{P}\p{S}]+/u)
+    .map(t => t.replace(/^\p{P}+|\p{P}+$/gu, ''))
+    .filter(t => {
+      if (!t || t.length < 2) return false;
+      if (!/\p{L}/u.test(t)) return false;
+      if (STOPWORDS.has(t.toLowerCase())) return false;
+      if (/^\d+$/.test(t)) return false;
       return true;
     });
-  const freq={};
-  tokens.forEach(t=>{
-    const k=t.toLowerCase();
-    freq[k]=(freq[k]||0)+1;
-  });
+  const freq = {};
+  tokens.forEach(t => { const k = t.toLowerCase(); freq[k] = (freq[k]||0) + 1; });
   return Object.entries(freq)
-    .map(([word,count])=>({word,count}))
-    .sort((a,b)=>b.count-a.count)
-    .slice(0,120);
+    .map(([word, count]) => ({word, count}))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 120);
 }
-
 function processWordList(){
-  const entries=wlData.filter(r=>r.w.trim());
-  if(!entries.length)return[];
-  const maxV=Math.max(...entries.map(r=>parseFloat(r.v)||1));
-  return entries.map(r=>({
-    word:r.w.trim(),
-    count:((parseFloat(r.v)||1)/maxV)*100
-  })).sort((a,b)=>b.count-a.count);
+  const entries = wlData.filter(r => r.w.trim());
+  if (!entries.length) return [];
+  const maxV = Math.max(...entries.map(r => parseFloat(r.v) || 1));
+  return entries
+    .map(r => ({ word: r.w.trim(), count: ((parseFloat(r.v) || 1) / maxV) * 100 }))
+    .sort((a, b) => b.count - a.count);
+}
+function shuffleArray(items){
+  const a = items.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-function generate(){
-  const canvas=document.getElementById('wc');
-  const ctx=canvas.getContext('2d');
-  ctx.clearRect(0,0,900,600);
+function generate(forceShuffle = false){
+  const genBtn = document.getElementById('genBtn');
+  const canvas = document.getElementById('wc');
+  const ctx = canvas.getContext('2d');
+  const W = 900, H = 600;
 
-  const palKey=document.getElementById('palSel').value;
-  const font=document.getElementById('fontSel').value;
-  const colors=PALETTES[palKey];
+  // Fill background
+  ctx.fillStyle = bgColor;
+  ctx.fillRect(0, 0, W, H);
 
-  let words=[];
-  if(mode==='paste'){
-    const txt=document.getElementById('txtInput').value.trim();
-    if(!txt){setStatus('Status: No text to process! Paste something first.','err');return;}
-    setStatus('Status: Processing text…','info');
-    words=processText(txt);
-      if(!words.length){setStatus('Status: No usable words found! Try more content.','err');return;}
-    } else {
-    words=processWordList();
-    if(!words.length){setStatus('Status: Word list is empty! Add some words first.','err');return;}
+  // Pick palette
+  const palKey = palSel.value;
+  const font = document.getElementById('fontSel').value;
+  const colors = palKey === 'custom' ? (customPalette.length ? customPalette : PALETTES.vivid) : PALETTES[palKey];
+  const randomizePositions = document.getElementById('randPos').checked;
+
+  // Get words
+  let words = [];
+  if (mode === 'paste'){
+    const txt = document.getElementById('txtInput').value.trim();
+    if (!txt){ setStatus('No text to process — paste something first.', 'err'); return; }
+    setStatus('Processing text…', 'info');
+    words = processText(txt);
+    if (!words.length){ setStatus('No usable words found — try more content.', 'err'); return; }
+  } else {
+    words = processWordList();
+    if (!words.length){ setStatus('Word list is empty — add some words first.', 'err'); return; }
   }
 
-  setStatus('Status: Placing words…','info');
+  if (randomizePositions || forceShuffle) words = shuffleArray(words);
+  setStatus(`Placing ${words.length} word${words.length!==1?'s':''}…`, 'info');
+  document.getElementById('canvasWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  genBtn.disabled = true;
 
-  const W=900,H=600;
-  const maxCount=words[0].count;
-  const minSize=16,maxSize=60;
+  // Defer one frame so the status can paint
+  requestAnimationFrame(() => {
+    const maxCount = words[0].count;
+    const minSize = 16, maxSize = 60;
+    const placed = [];
 
-  const placed=[];
-
-  function getSize(c){
-    const ratio=Math.sqrt(c/maxCount);
-    return Math.round(minSize+(maxSize-minSize)*ratio);
-  }
-
-  function overlap(a,b){
-    return!(a.x+a.w/2<b.x-b.w/2||a.x-a.w/2>b.x+b.w/2||a.y+a.h/2<b.y-b.h/2||a.y-a.h/2>b.y+b.h/2);
-  }
-
-  function tryPlace(word,size,vertical){
-    ctx.font=`${size}px ${font}`;
-    const m=ctx.measureText(word);
-    const tw=Math.ceil(m.width)+4;
-    const th=size+4;
-    const bw=vertical?th:tw;
-    const bh=vertical?tw:th;
-    const margin=4;
-    const maxR=Math.max(W,H)*0.6;
-    for(let r=0;r<maxR;r+=2.5){
-      for(let ang=0;ang<Math.PI*2*(1+r/20);ang+=0.15){
-        const cx=W/2+r*Math.cos(ang)*1.3;
-        const cy=H/2+r*Math.sin(ang)*0.8;
-        if(cx-bw/2<margin||cx+bw/2>W-margin||cy-bh/2<margin||cy+bh/2>H-margin)continue;
-        const box={x:cx,y:cy,w:bw+4,h:bh+4};
-        if(placed.every(p=>!overlap(box,p))){
-          return{cx,cy,box,vertical,tw,th,size};
+    function getSize(c){
+      const ratio = Math.sqrt(c / maxCount);
+      return Math.round(minSize + (maxSize - minSize) * ratio);
+    }
+    function overlap(a, b){
+      return !(a.x + a.w/2 < b.x - b.w/2 || a.x - a.w/2 > b.x + b.w/2 ||
+               a.y + a.h/2 < b.y - b.h/2 || a.y - a.h/2 > b.y + b.h/2);
+    }
+    function tryPlace(word, size, vertical){
+      ctx.font = `${size}px ${font}`;
+      const m = ctx.measureText(word);
+      const tw = Math.ceil(m.width) + 4;
+      const th = size + 4;
+      const bw = vertical ? th : tw;
+      const bh = vertical ? tw : th;
+      const margin = 4;
+      const maxR = Math.max(W, H) * 0.6;
+      const angleOffset = randomizePositions ? Math.random() * Math.PI * 2 : 0;
+      const radiusOffset = randomizePositions ? Math.random() * 8 : 0;
+      for (let r = 0; r < maxR; r += 2.5){
+        for (let ang = angleOffset; ang < angleOffset + Math.PI * 2 * (1 + r/20); ang += 0.15){
+          const radius = r + radiusOffset;
+          const cx = W/2 + radius * Math.cos(ang) * 1.3;
+          const cy = H/2 + radius * Math.sin(ang) * 0.8;
+          if (cx - bw/2 < margin || cx + bw/2 > W - margin || cy - bh/2 < margin || cy + bh/2 > H - margin) continue;
+          const box = { x: cx, y: cy, w: bw + 4, h: bh + 4 };
+          if (placed.every(p => !overlap(box, p))){
+            return { cx, cy, box, vertical, tw, th, size };
+          }
         }
       }
+      return null;
     }
-    return null;
-  }
 
-  let drawn=0;
-  words.forEach((entry,i)=>{
-    const size=getSize(entry.count);
-    const color=colors[i%colors.length];
-    const vertical=i>0&&i%3===0;
-    let res=tryPlace(entry.word,size,vertical)||tryPlace(entry.word,size,!vertical);
-    if(!res&&size>minSize){
-      const s2=Math.max(minSize,size-8);
-      res=tryPlace(entry.word,s2,false);
-    }
-    if(!res)return;
-    placed.push(res.box);
-    ctx.save();
-    ctx.fillStyle=color;
-    ctx.font=`${res.size}px ${font}`;
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    if(res.vertical){
-      ctx.translate(res.cx,res.cy);
-      ctx.rotate(-Math.PI/2);
-      ctx.fillText(entry.word,0,0);
+    let drawn = 0;
+    words.forEach((entry, i) => {
+      const size = getSize(entry.count);
+      const color = colors[i % colors.length];
+      const vertical = i > 0 && i % 3 === 0;
+      let res = tryPlace(entry.word, size, vertical) || tryPlace(entry.word, size, !vertical);
+      if (!res && size > minSize){
+        const s2 = Math.max(minSize, size - 8);
+        res = tryPlace(entry.word, s2, false);
+      }
+      if (!res) return;
+      placed.push(res.box);
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = `${res.size}px ${font}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      if (res.vertical){
+        ctx.translate(res.cx, res.cy);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillText(entry.word, 0, 0);
+      } else {
+        ctx.fillText(entry.word, res.cx, res.cy);
+      }
+      ctx.restore();
+      drawn++;
+    });
+
+    // Show canvas
+    const wrap = document.getElementById('canvasWrap');
+    const empty = document.getElementById('canvasEmpty');
+    empty.style.display = 'none';
+    canvas.style.display = 'block';
+    wrap.classList.remove('empty');
+    document.getElementById('canvasActions').style.display = 'flex';
+
+    genBtn.disabled = false;
+    const total = words.length;
+    if (drawn === total){
+      setStatus(`Done — ${drawn} word${drawn!==1?'s':''} placed.`, 'ok');
+    } else if (drawn === 0){
+      setStatus('Could not fit any words — try fewer words or a smaller font.', 'err');
     } else {
-      ctx.fillText(entry.word,res.cx,res.cy);
+      setStatus(`Placed ${drawn} of ${total} words — ${total - drawn} didn't fit.`, 'warn');
     }
-    ctx.restore();
-    drawn++;
   });
-
-  const total=words.length;
-  if(drawn===total){
-    setStatus(`Status: Done! ${drawn} Word${drawn!==1?'s':''} placed.`,'ok');
-  } else if(drawn===0){
-    setStatus('Status: Could not fit any words! Try fewer words or a smaller font.','err');
-  } else {
-    setStatus(`Status: Placed ${drawn} of ${total} words. ${total-drawn} didn't fit.`,'ok');
-  }
 }
 
 function download(){
-  const canvas=document.getElementById('wc');
-  const tempCanvas=document.createElement('canvas');
-  tempCanvas.width=canvas.width;
-  tempCanvas.height=canvas.height;
-  const tempCtx=tempCanvas.getContext('2d');
-  tempCtx.fillStyle='#ffffff';
-  tempCtx.fillRect(0,0,tempCanvas.width,tempCanvas.height);
-  tempCtx.drawImage(canvas,0,0);
-  const link=document.createElement('a');
-  link.href=tempCanvas.toDataURL('image/png');
-  link.download='word-cloud.png';
+  const canvas = document.getElementById('wc');
+  if (canvas.style.display === 'none'){
+    setStatus('Nothing to download yet — generate a cloud first.', 'err');
+    return;
+  }
+  const tmp = document.createElement('canvas');
+  tmp.width = canvas.width; tmp.height = canvas.height;
+  const tctx = tmp.getContext('2d');
+  tctx.fillStyle = bgColor;
+  tctx.fillRect(0, 0, tmp.width, tmp.height);
+  tctx.drawImage(canvas, 0, 0);
+  const link = document.createElement('a');
+  link.href = tmp.toDataURL('image/png');
+  link.download = 'word-cloud.png';
   link.click();
 }
+
+/* =========================================================
+   WIRE UP + INIT
+   ========================================================= */
+document.getElementById('genBtn').addEventListener('click', () => generate());
+document.getElementById('dlBtn').addEventListener('click', download);
+document.getElementById('reshuffleBtn').addEventListener('click', () => generate(true));
+
+renderRows();
+renderCustomPalette();
+handlePaletteChange();
+setMode('list');
 </script>
+</body>
+</html>
